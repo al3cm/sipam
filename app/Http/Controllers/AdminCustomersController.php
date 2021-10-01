@@ -48,7 +48,7 @@
 			$this->form[] = ['label'=>'Tipo de documento','name'=>'document_type','type'=>'select','validation'=>'required|min:1|max:30','width'=>'col-sm-10','dataenum'=>'DNI;C.E.','default'=>'Elija un tipo de documento'];
 			$this->form[] = ['label'=>'N° de documento','name'=>'document_number','type'=>'text','validation'=>'required|min:1|max:9|unique:customers','width'=>'col-sm-10'];
 			$this->form[] = ['label'=>'Ruc','name'=>'ruc','type'=>'text','validation'=>'min:11|max:11','width'=>'col-sm-10','placeholder'=>'Ingrese el N° de RUC'];
-			$this->form[] = ['label'=>'Razón social','name'=>'business_name','type'=>'text','validation'=>'required|min:1|max:100','width'=>'col-sm-10','placeholder'=>'Ingrese la razón social (nombre completo para personas naturales)'];
+			$this->form[] = ['label'=>'Razón social','name'=>'business_name','type'=>'text','validation'=>'required|min:1|max:50','width'=>'col-sm-10','placeholder'=>'Ingrese la razón social (nombre completo para personas naturales)'];
 			$this->form[] = ['label'=>'Persona','name'=>'person','type'=>'select','validation'=>'required|string|min:3|max:20','width'=>'col-sm-10','dataenum'=>'Natural; Jurídica'];
 			$this->form[] = ['label'=>'Dirección','name'=>'address','type'=>'text','validation'=>'required|min:1|max:100','width'=>'col-sm-10','placeholder'=>'Ingrese la dirección del cliente'];
 			$this->form[] = ['label'=>'Teléfono','name'=>'phone_number','type'=>'text','validation'=>'required|min:6|max:9','width'=>'col-sm-10','placeholder'=>'Ingrese un teléfono de contacto'];

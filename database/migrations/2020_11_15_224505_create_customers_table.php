@@ -23,7 +23,7 @@ class CreateCustomersTable extends Migration
             $table->string('ruc',50)->nullable();
             $table->string('business_name',50)->nullable();
             $table->string('person',50);
-            $table->string('address',50)->nullable();
+            $table->string('address',100)->nullable();
             $table->string('phone_number',50)->nullable();
             $table->string('email',50)->nullable();
             $table->boolean('state');
