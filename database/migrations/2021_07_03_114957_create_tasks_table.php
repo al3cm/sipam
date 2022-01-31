@@ -18,9 +18,9 @@ class CreateTasksTable extends Migration
             $table->string('title',100);
             $table->string('description',500)->default('');
             $table->boolean('check')->default(0);
-            $table->date('deadline');
-            $table->date('finish_date');
+            $table->date('finish_date')->nullable();
             $table->bigInteger('process_id');            
+            $table->integer('user_id');            
             $table->timestamps();
         });
     }

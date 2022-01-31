@@ -36,6 +36,7 @@
 			$this->col[] = ["label"=>"Cliente","name"=>"customer_id","join"=>"customers,business_name"];
 			$this->col[] = ["label"=>"Fecha de entrega","name"=>"delivery_date"];
 			$this->col[] = ["label"=>"Costo Total del pedido","name"=>"total"];
+			$this->col[] = ["label"=>"Estado del pedido","name"=>"state"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
 
 			# START FORM DO NOT REMOVE THIS LINE
@@ -380,6 +381,24 @@
 	        
 	    }
 
+		public function getEdit($id)
+		{
+
+			
+			$data['row'] = DB::table('orders')
+						->where('orders.id',$id)->first();
+
+
+			if ($data['row']->state==2) {
+				CRUDBooster::redirectBack(
+					'Los pedidos en estado <b>en proceso</b>, no se pueden <b>editar</b>.'
+				);
+			}else{
+				return \crocodicstudio\crudbooster\controllers\CBController::getEdit($id);
+			}
+		
+		}	
+
 
 	    /*
 	    | ---------------------------------------------------------------------- 
@@ -391,7 +410,7 @@
 	    */
 	    public function actionButtonSelected($id_selected,$button_name) {
 	        //Your code here
-	            
+
 	    }
 
 
@@ -404,7 +423,7 @@
 	    */
 	    public function hook_query_index(&$query) {
 	        //Your code here
-	            
+
 	    }
 
 	    /*
@@ -415,6 +434,10 @@
 	    */    
 	    public function hook_row_index($column_index,&$column_value) {	        
 	    	//Your code here
+			// Formateando pedido
+			if($column_index == 1){
+				$column_value = 'N° '. str_pad($column_value,4,"0",STR_PAD_LEFT);
+			}	
 			// Colocando el tipo de Pedido
 			if($column_index == 2){
 				if($column_value==1)
@@ -431,7 +454,15 @@
 			if($column_index == 6){
 				$column_value = 'S/ ' . number_format($column_value, 2);
 			}
-			
+			// Formateando el estado
+			if($column_index == 7){
+				if ($column_value==1){
+					$column_value="Registrado";
+				}
+				if ($column_value==2){
+					$column_value="En proceso";
+				}
+			}			
 
 	    }
 

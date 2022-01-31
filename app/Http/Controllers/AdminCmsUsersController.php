@@ -60,4 +60,16 @@ class AdminCmsUsersController extends CBController {
 	public function hook_before_add(&$postdata) {      
 	    unset($postdata['password_confirmation']);
 	}
+	public function hook_after_add($id) {
+		//Your code here
+		DB::table('cms_users')
+		->where('id', $id)
+		->update(['status' => 'Active']);
+	}
+	public function hook_after_delete($id) {
+		//Your code here
+		DB::table('cms_users')
+		->where('id', $id)
+		->update(['status' => 'Inactive']);
+	}
 }

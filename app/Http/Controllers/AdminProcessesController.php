@@ -4,8 +4,10 @@
 	use Request;
 	use DB;
 	use CRUDBooster;
+	use Carbon\Carbon;
+use SebastianBergmann\Environment\Console;
 
-	class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\CBController {
+class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\CBController {
 
 	    public function cbInit() {
 
@@ -42,14 +44,14 @@
 			# START FORM DO NOT REMOVE THIS LINE
 			$this->form = [];
 			$this->form[] = ['label'=>'Pedido','name'=>'order_id','type'=>'select2','validation'=>'required|min:1|max:255','width'=>'col-sm-2','datatable'=>'orders,id'];
-			$this->form[] = ['label'=>'Fecha de inicio','name'=>'start_date','type'=>'date','validation'=>'required|date','width'=>'col-sm-2',"callback_php"=>'($row->start_date!=null?date("d-m-Y",strtotime($row->start_date)):"")'];
-			$this->form[] = ['label'=>'Fecha de entrega','name'=>'deadline','type'=>'date','validation'=>'required|date','width'=>'col-sm-2',"callback_php"=>'($row->deadline!=null?date("d-m-Y",strtotime($row->deadline)):"")'];
+			$this->form[] = ['label'=>'Fecha de inicio','name'=>'start_date','type'=>'date','validation'=>'required','width'=>'col-sm-2',"callback_php"=>'($row->start_date!=null?date("d-m-Y",strtotime($row->start_date)):"")'];
+			$this->form[] = ['label'=>'Fecha de entrega','name'=>'deadline','type'=>'date','validation'=>'required','width'=>'col-sm-2',"callback_php"=>'($row->deadline!=null?date("d-m-Y",strtotime($row->deadline)):"")'];
 			$this->form[] = ['label'=>'Lote del pedido','name'=>'batch','type'=>'text','validation'=>'integer|min:0','width'=>'col-sm-2'];
 			$this->form[] = ['label'=>'Lote para corte','name'=>'cutting_batch','type'=>'text','validation'=>'integer|min:0','width'=>'col-sm-2'];
 			$this->form[] = ['label'=>'Lote para habilitado','name'=>'enabled_batch','type'=>'text','validation'=>'integer|min:0','width'=>'col-sm-2'];
 			$this->form[] = ['label'=>'Lote para confección','name'=>'confection_batch','type'=>'text','validation'=>'integer|min:0','width'=>'col-sm-2'];
 			$this->form[] = ['label'=>'Lote para acabado','name'=>'finishing_batch','type'=>'text','validation'=>'integer|min:0','width'=>'col-sm-2'];
-			$this->form[] = ['label'=>'% de avance','name'=>'advance','type'=>'money','validation'=>'integer|min:0','width'=>'col-sm-2'];
+			$this->form[] = ['label'=>'% de avance','name'=>'advance','type'=>'double','width'=>'col-sm-2'];
 			$this->form[] = ['label'=>'Anotaciones','name'=>'notes','type'=>'textarea','validation'=>'min:1|max:500','width'=>'col-sm-5'];
 			# END FORM DO NOT REMOVE THIS LINE
 
@@ -167,56 +169,244 @@
 	        |
 	        */
 	        $this->script_js = "
-			$(document).ready(function() { 
 
-				$('#cutting_batch').val(0);
-				$('#enabled_batch').val(0);
-				$('#confection_batch').val(0);
-				$('#finishing_batch').val(0);
-			});
 			
 			$(function(){
-				indice=$('#order_id option:selected').val();
 
-				var getDate = function (input) {
-					return new Date(input.date.valueOf());
+				$(document).ready(function() { 
+					editar = $('#editar').val();
+					console.log('Editar: ' + editar);
+					if(editar == 0){
+						limpiar();
+					}else{
+						indice_editar = $('#order_id').val();
+						console.log('Índice editar: ' + indice_editar);
+						
+						fecha_pedido=new Date(Date.parse($('#order_date_o').val()+' 00:00:00'));
+						fecha_entrega=new Date(Date.parse($('#delivery_date_o').val()+' 00:00:00'));
+						
+
+						console.log('Fecha de Hidden Inicio: ' + $('#start_date_o').val());
+						fecha_inicio=new Date(Date.parse($('#start_date_o').val()+' 00:00:00'));
+						console.log('Fecha de Inicio: ' + fecha_inicio);
+						
+						var d = fecha_inicio.getDate();
+						var m = fecha_inicio.getMonth() + 1;
+						var y = fecha_inicio.getFullYear();
+						$('#start_date').val((d <= 9 ? '0' + d : d)+'-'+(m<=9 ? '0' + m : m)+'-'+fecha_inicio.getFullYear()); 
+					
+						$('#start_date').datepicker('setStartDate', fecha_pedido);
+						$('#deadline').datepicker('setStartDate', fecha_inicio);								
+						console.log('Fecha de control inicio: ' + $('#start_date').val());
+
+						
+						fecha_fin=new Date(Date.parse($('#deadline_o').val()+' 00:00:00'));
+						d = fecha_fin.getDate();
+						m = fecha_fin.getMonth() + 1;
+						y = fecha_fin.getFullYear();
+						$('#deadline').val((d <= 9 ? '0' + d : d)+'-'+(m<=9 ? '0' + m : m)+'-'+fecha_fin.getFullYear()); 
+
+
+						$('#start_date').datepicker('setEndDate', fecha_fin);
+						$('#deadline').datepicker('setEndDate', fecha_entrega);
+
+						$('#start_date').datepicker('setDate', fecha_inicio);
+						$('#deadline').datepicker('setDate', fecha_fin);
+
+
+
+
+
+
+					}
+				});
+
+				$('#grabar').click(function(){
+					console.log(\"Porcentaje calculado: \"+$('#advance').val());
+					$('#formulario').submit();
+				});
+				
+				$('#finalizar').click(function(){
+					$('#finalizar').val('1');
+					$('#formulario').submit();
+				});
+
+				function limpiar(){
+	
+					$('#start_date').prop('disabled', true);
+					$('#deadline').prop('disabled', true);
+	
+					$('#can0').text(0);
+					$('#can1').text(0);
+					$('#can2').text(0);
+					$('#can3').text(0);
+	
+					$('#can0').val(0);
+					$('#can1').val(0);
+					$('#can2').val(0);
+					$('#can3').val(0);
+	
+					$('#can0').prop('disabled', true);
+					$('#can1').prop('disabled', true);
+					$('#can2').prop('disabled', true);
+					$('#can3').prop('disabled', true);
+				
+					$('#tcan0').text(0);
+					$('#tcan1').text(0);
+					$('#tcan2').text(0);
+					$('#tcan3').text(0);
+	
+					$('#tcan0').val(0);
+					$('#tcan1').val(0);
+					$('#tcan2').val(0);
+					$('#tcan3').val(0);
+	
+					$('#pcan0').text(0 + ' %');
+					$('#pcan1').text(0 + ' %');
+					$('#pcan2').text(0 + ' %');
+					$('#pcan3').text(0 + ' %');
+	
+					$('#t_advance').text(0 + ' %');
+					$('#t_advance').val(0);
+	
+					$('#advance').val(0);
+	
+					$('#batch').text(0 + ' %');
+					$('#batch').val(0);
+	
+					$('#customer_name').val(''); 
+					$('#customer_business_name').val(''); 
+					$('#customer_document_number').val(''); 
+					$('#customer_ruc').val(''); 
+					$('#customer_address').val(''); 
+					$('#customer_email').val(''); 
+					$('#customer_phone_number').val(''); 
+	
+					$('#order_date').val('');
+					$('#start_date').val('');
+					$('#deadline').val('');
+					$('#delivery_date').val('');
+					
+					$('#detalle-pedido').html('');
+	
+					$('#notes').text('');
+					$('#notes').val('');
 				}
 
-				$('#start_date, #deadline').datepicker({
-					format: 'dd/mm/yyyy',
+				
+                $('#start_date').on('changeDate',
+				function (selected) {
+					$('#deadline').datepicker('clearDates');
+					$('#deadline').datepicker('setStartDate', $('#start_date').val());
+					editar2 = $('#editar').val();
+					if(editar2 == 0){
+						}
+				});
+
+				$('#deadline').on('changeDate',
+					function (selected) {
+						$('#start_date').datepicker('setEndDate', $('#deadline').val());
+						editar2 = $('#editar').val();
+						if(editar2 == 0){						
+						}
+				});
+
+				$('.input_date').datepicker({
+					format: 'dd-mm-yyyy',
 					todayHighlight: true,
 					autoclose: true,						
 					language: 'es'
 				});
 
-				$('#deadline').datepicker({
-					startDate: '+6d',
-					endDate: '+36d',
+				$('#order_date').text({
+					format: 'dd-mm-yyyy',
+					todayHighlight: true,
+					autoclose: true,						
+					language: 'es'
 				});
 
-				$('#start_date').datepicker({
-					startDate: '+5d',
-					endDate: '+35d',
-				}).on('changeDate',
-					function (selected) {
-						$('#deadline').datepicker('clearDates');
-						$('#deadline').datepicker('setStartDate', getDate(selected));
-					});
-
-				$('#cutting_batch').keypress(function(e){
+				$('#can0').keypress(function(e){
 					return esEntero(e);
 				});
 
-				$('#enabled_batch').keypress(function(e){
+				$('#can1').keypress(function(e){
 					return esEntero(e);
 				});
 
-				$('#confection_batch').keypress(function(e){
+				$('#can2').keypress(function(e){
+					return esEntero(e);
+				});
+				
+				$('#can3').keypress(function(e){
 					return esEntero(e);
 				});
 
-				$('#finishing_batch').keypress(function(e){
-					return esEntero(e);
+				$('#can0').blur(function(e){
+					$('#tcan0').val($('#tcan0').text());
+					$('#tcan1').val($('#tcan1').text());
+					$('#tcan2').val($('#tcan2').text());
+					$('#tcan3').val($('#tcan3').text());
+					
+					if($('#can0').val()>$('#tcan0').val()){
+						alert('Valor no puede ser mayor a la cantidad de bienes');
+						$('#can0').val(0);
+						calculaPorcentajes();
+						$('#can0').focus();
+						return false;
+					}else{
+						return true;
+					}
+				});
+
+				$('#can1').blur(function(e){
+					$('#tcan0').val($('#tcan0').text());
+					$('#tcan1').val($('#tcan1').text());
+					$('#tcan2').val($('#tcan2').text());
+					$('#tcan3').val($('#tcan3').text());
+
+					if($('#can1').val()>$('#tcan1').val()){
+						alert('Valor no puede ser mayor a la cantidad de bienes');
+						$('#can1').val(0);
+						calculaPorcentajes();
+						$('#can1').focus();
+						return false;
+					}else{
+						return true;
+					}
+				});
+
+				$('#can2').blur(function(e){
+					$('#tcan0').val($('#tcan0').text());
+					$('#tcan1').val($('#tcan1').text());
+					$('#tcan2').val($('#tcan2').text());
+					$('#tcan3').val($('#tcan3').text());
+
+					if($('#can2').val()>$('#tcan2').val()){
+						alert('Valor no puede ser mayor a la cantidad de bienes');
+						$('#can2').val(0);
+						calculaPorcentajes();
+						$('#can2').focus();
+						return false;
+					}else{
+						return true;
+					}
+				});
+
+				$('#can3').blur(function(e){
+					$('#tcan0').val($('#tcan0').text());
+					$('#tcan1').val($('#tcan1').text());
+					$('#tcan2').val($('#tcan2').text());
+					$('#tcan3').val($('#tcan3').text());
+
+					if($('#can3').val()>$('#tcan3').val()){
+						alert('Valor no puede ser mayor a la cantidad de bienes');
+						$('#can3').val(0);
+						calculaPorcentajes();
+						$('#can3').focus();
+						return false;
+					}else{
+						return true;
+					}
 				});
 
 				function esEntero(key) {
@@ -229,15 +419,238 @@
 				}
 
 				$('#order_id').on('change', function(e){
-					indice = $('#order_id option:selected').val();
-					actualiza(indice);
+					editar2 = $('#editar').val();
+					console.log('Editar change: ' + editar2);
+					if(editar2 == 0){
+						indice = $('#order_id option:selected').val();
+										
+						if(indice == ''){
+							limpiar();
+						}else{
+
+							$('#can0').text(0);
+							$('#can1').text(0);
+							$('#can2').text(0);
+							$('#can3').text(0);
+			
+							$('#can0').val(0);
+							$('#can1').val(0);
+							$('#can2').val(0);
+							$('#can3').val(0);
+
+							$('#can0').prop('disabled', false);
+							$('#can1').prop('disabled', false);
+							$('#can2').prop('disabled', false);
+							$('#can3').prop('disabled', false);	
+							
+							$('#start_date').prop('disabled', false);
+							$('#deadline').prop('disabled', false);
+
+							actualizaCliente(indice);
+						}
+					}else{
+						
+					}
+
+					
+					
 				});
 
-				function actualiza(indice){
-					
-					$('#order_date').val($(''#order_id option:selected'').text());
 
+
+				function actualizaCliente(id){
+					$.ajax(
+						{ 
+							type: 'GET', 
+							url: 'fill-customer/' + id, 
+							data: '', 
+							success: function(result) { 
+								console.log(\"id \"+id);
+								console.log(\"resultado \"+result[0].name);
+								$('#customer_name').val(result[0].name+' '+result[0].last_name+' '+result[0].second_last_name); 
+								$('#customer_business_name').val(result[0].business_name); 
+								$('#customer_document_number').val(result[0].document_number); 
+								$('#customer_ruc').val(result[0].ruc); 
+								$('#customer_address').val(result[0].address); 
+								$('#customer_email').val(result[0].email); 
+								$('#customer_phone_number').val(result[0].phone_number); 
+								actualizaPedido(id);
+							}
+						}).fail(function() {
+							console.log(\"error\");
+						  });
 				}
+
+				function actualizaPedido(id){
+					$.ajax(
+						{ 
+							type: 'GET', 
+							url: 'fill-order/' + id, 
+							data: '', 
+							success: function(result) {
+								console.log(\"Cantidad de elementos: \" + result.length);
+								fecha_pedido=new Date(Date.parse(result[0].order_date+' 00:00:00'));
+								console.log('P'+result[0].id+': Fecha del Pedido: ' + fecha_pedido);
+								
+								var d = fecha_pedido.getDate();
+								var m = fecha_pedido.getMonth() + 1;
+								var y = fecha_pedido.getFullYear();
+								$('#order_date').val((d <= 9 ? '0' + d : d)+'-'+(m<=9 ? '0' + m : m)+'-'+fecha_pedido.getFullYear()); 
+							
+								$('#start_date').datepicker('setStartDate', fecha_pedido);
+								$('#deadline').datepicker('setStartDate', fecha_pedido);								
+								console.log('P'+result[0].id+': Fecha de inicio: ' + $('#start_date').val());
+
+								
+								fecha_entrega=new Date(Date.parse(result[0].delivery_date+' 00:00:00'));
+								d = fecha_entrega.getDate();
+								m = fecha_entrega.getMonth() + 1;
+								y = fecha_entrega.getFullYear();
+								$('#delivery_date').val((d <= 9 ? '0' + d : d)+'-'+(m<=9 ? '0' + m : m)+'-'+fecha_entrega.getFullYear()); 
+  
+
+								$('#start_date').datepicker('setEndDate', fecha_entrega);
+								$('#deadline').datepicker('setEndDate', fecha_entrega);
+
+								$('#start_date').datepicker('setDate', fecha_pedido);
+								$('#deadline').datepicker('setDate', fecha_entrega);
+								console.log('P'+result[0].id+': Fecha de entrega: ' + $('#deadline').val());
+								actualizaDetallePedido(id);
+								console.log('----------------------------------------------------');
+							}
+						}).fail(function() {
+							console.log(\"error\");
+						  });
+				}
+
+				function actualizaDetallePedido(id){
+					$.ajax(
+						{ 
+							type: 'GET', 
+							url: 'fill-order-details/' + id, 
+							data: '', 
+							success: function(result) { 
+								console.log(\"Cantidad de elementos: \" + result.length);
+								var total_prendas = 0;
+								tab = \"<table width='100%' border='1' style='border: 1px solid #c1bdbd;'>\"
+								tab += \"<tr><th class='cen gris'>Prenda</th>\"
+								tab += \"<th class='cen gris'>Género</th>\"
+								tab += \"<th class='cen gris'>Talla</th>\"
+								tab += \"<th class='cen gris'>Color</th>\"
+								tab += \"<th class='cen gris'>Material</th>\"
+								tab += \"<th class='cen gris'>Cantidad</th></tr>\"
+								for (var i = 0; i < result.length; i++) {
+									
+									tab += \"<tr>\"
+									tab += \"<td class='cen'>\" + result[i].tg_description + \"</td>\"
+									tab += \"<td class='cen'>\" + result[i].gender + \"</td>\"
+									tab += \"<td class='cen'>\" + result[i].s_description + \"</td>\"
+									tab += \"<td class='cen'>\" + result[i].c_name + \"</td>\"
+									tab += \"<td class='cen'>\" + result[i].m_name + \"</td>\"
+									tab += \"<td class='cen'>\" + result[i].quantity + \"</td>\"
+									tab += \"</tr>\"
+									total_prendas += result[i].quantity;
+								}
+								tab += \"<tr class='gris'><th class='cen' colspan='5'>Total de prendas</th>\"
+								tab += \"<th class='cen'>\" +  total_prendas + \"</td></tr>\"
+
+
+								tab += \"</table>\"
+								$('#detalle-pedido').html(tab);
+								$('#batch').val(total_prendas);
+
+								$('#tcan0').text(total_prendas);
+								$('#tcan1').text(total_prendas);
+								$('#tcan2').text(total_prendas);
+								$('#tcan3').text(total_prendas);
+			
+								$('#tcan0').val(total_prendas);
+								$('#tcan1').val(total_prendas);
+								$('#tcan2').val(total_prendas);
+								$('#tcan3').val(total_prendas);
+
+								calculaPorcentajes();
+							}
+						}).fail(function() {
+							console.log(\"error\");
+						  });
+				}
+
+				$('#can0').on('change', function(e){
+					calculaPorcentajes();
+				});
+
+				$('#can1').on('change', function(e){
+					calculaPorcentajes();
+				});
+
+				$('#can2').on('change', function(e){
+					calculaPorcentajes();
+				});
+
+				$('#can3').on('change', function(e){
+					calculaPorcentajes();
+				});
+
+
+				function roundToTwo(num) {
+					return +(Math.round(num + \"e+2\")  + \"e-2\");
+				}
+
+				function calculaPorcentajes(){
+					
+					$('#tcan0').val($('#tcan0').text());
+					$('#tcan1').val($('#tcan1').text());
+					$('#tcan2').val($('#tcan2').text());
+					$('#tcan3').val($('#tcan3').text());
+
+
+					var porcentaje=0;
+				
+					if($('#can0').val()==0){
+						$('#pcan0').text(0 + ' %');
+						$('#pcan0').val(0);
+					}else{
+						porcentaje = (($('#can0').val() / $('#tcan0').val())*100) / 4;
+						$('#pcan0').text(roundToTwo(porcentaje) + ' %');						
+						$('#pcan0').val(roundToTwo(porcentaje) + ' %');						
+					}
+
+					if($('#can1').val()==0){
+						$('#pcan1').text(0 + ' %');
+						$('#pcan1').val(0);
+					}else{
+						porcentaje = (($('#can1').val() / $('#tcan1').val())*100) / 4;
+						$('#pcan1').text(roundToTwo(porcentaje) + ' %');						
+						$('#pcan1').val(roundToTwo(porcentaje) + ' %');						
+					}
+
+					if($('#can2').val()==0){
+						$('#pcan2').text(0 + ' %');
+						$('#pcan2').val(0);
+					}else{
+						porcentaje = (($('#can2').val() / $('#tcan2').val())*100) / 4;
+						$('#pcan2').text(roundToTwo(porcentaje) + ' %');						
+						$('#pcan2').val(roundToTwo(porcentaje) + ' %');						
+					}
+
+					if($('#can3').val()==0){
+						$('#pcan3').text(0 + ' %');
+						$('#pcan3').val(0);
+					}else{
+						porcentaje = (($('#can3').val() / $('#tcan3').val())*100) / 4;
+						$('#pcan3').text(roundToTwo(porcentaje) + ' %');						
+						$('#pcan3').val(roundToTwo(porcentaje) + ' %');						
+					}
+
+					porcentaje = parseFloat($('#pcan0').val()) + parseFloat($('#pcan1').val()) + parseFloat($('#pcan2').val()) + parseFloat($('#pcan3').val());
+
+					$('#t_advance').text(porcentaje + ' %');
+					$('#t_advance').val(porcentaje);
+					$('#advance').val(parseFloat(porcentaje));
+					console.log(\"Porcentaje calculado: \"+$('#advance').val());
+				}
+
 
 			});";
 
@@ -286,7 +699,33 @@
 	        | $this->style_css = ".style{....}";
 	        |
 	        */
-	        $this->style_css = NULL;
+	        $this->style_css = "    .der {text-align:right;} 
+			.izq {text-align:left;} 
+			.cen {text-align:center;} 
+			
+			label {font-weight: normal;} 
+			.edita{width:70px; text-align:center} 
+			.panel-default>.panel-heading {font-weight: bold;}
+			.gris {background-color: #eeeeee;}
+			.flota1 {float: right; margin-top: -5px;}
+			.margen0 {margin: 0px;}
+			.margen1 {margin: 5px;}
+			.margen2 {margin: 0px 8px 0px 8px;}
+			.margen3 {margin: 0px 10px 0px 10px;}
+			.negrita {font-weight:bold;}
+			.pad0808 {padding: 0px 8px 0px 8px;}
+			.an5 {width:5%}
+			.an7 {width:7%}
+			.an8 {width:8%}
+			.an10 {width:10%}
+			.an15 {width:15%}
+			.an20 {width:20%}
+			.an25 {width:25%}
+			.an35 {width:35%}
+			.an50 {width:50%}
+			.dlin {display:inline}
+			.filacel {background-color: aliceblue}
+			.tabla {border: 1px solid #c1bdbd;border-width: 1px}";
 	        
 	        
 	        
@@ -306,10 +745,88 @@
 		public function getAdd()
 		{
 			$data['page_title']  = "Agregar nuevo proceso productivo";
-			$data['orders'] = DB::table('orders')->get();
-			//$this->cbView('post_add',$data);
-			return $this->view('post_add',$data);
+			//$data['orders'] = DB::table('orders')->get();
+			$data['editar'] = 0;
+			$data['orders'] = DB::table('orders')
+						->whereNotExists(function ($query) {
+							$query->select(DB::raw(1))
+								  ->from('processes')
+								  ->whereColumn('processes.order_id', 'orders.id')
+								  ->where('processes.state','>', 0);
+						})
+						->get();
+			//$this->cbView('process_add',$data);
+			return $this->view('process_add',$data);
 		}
+
+		public function getEdit($id)
+		{
+			//dd($id);
+			$data['page_title']  = "Editar un proceso productivo";
+			$data['editar'] = 1;
+			$data['row'] = DB::table('processes')
+						->where('processes.id',$id)->first();
+			//dd($data['row']->start_date);
+			//dd(date('d-m-Y', strtotime($data['row']->start_date)));
+
+
+			if ($data['row']->state==2) {
+				CRUDBooster::redirectBack(
+					'Los procesos en estado <b>Finalizado</b>, no se pueden <b>editar</b>.'
+				);
+			}else{
+
+				$data['order'] = DB::table('orders')
+							->where('orders.id',$data['row']->order_id)->first();
+							
+				$data['order_details'] = DB::table('order_details')
+							->join('garments','garments.id','=','order_details.garment_id')
+							->join('types_garments','types_garments.id','=','garments.type_garment_id')
+							->join('sizes','sizes.id','=','garments.size_id')
+							->join('colors','colors.id','=','garments.color_id')												
+							->join('materials','materials.id','=','garments.material_id')
+							->select('types_garments.description as tg_description','garments.gender','sizes.description as s_description','colors.name as c_name','materials.name as m_name','order_details.quantity')				
+							->where('order_details.order_id',$data['row']->order_id)->get();
+
+				$data['customer'] = DB::table('customers')
+							->where('customers.id',$data['order']->customer_id)->first();						
+					
+				return $this->view('process_edit',$data);	
+			}
+		
+		}
+
+		public function getDetail($id){
+			//dd($id);
+			$data['page_title']  = "Detalle de un proceso productivo";
+			$data['editar'] = 1;
+			$data['row'] = DB::table('processes')
+						->where('processes.id',$id)->first();
+			//dd($data['row']->start_date);
+			//dd(date('d-m-Y', strtotime($data['row']->start_date)));
+
+
+			
+
+			$data['order'] = DB::table('orders')
+						->where('orders.id',$data['row']->order_id)->first();
+						
+			$data['order_details'] = DB::table('order_details')
+						->join('garments','garments.id','=','order_details.garment_id')
+						->join('types_garments','types_garments.id','=','garments.type_garment_id')
+						->join('sizes','sizes.id','=','garments.size_id')
+						->join('colors','colors.id','=','garments.color_id')												
+						->join('materials','materials.id','=','garments.material_id')
+						->select('types_garments.description as tg_description','garments.gender','sizes.description as s_description','colors.name as c_name','materials.name as m_name','order_details.quantity')				
+						->where('order_details.order_id',$data['row']->order_id)->get();
+
+			$data['customer'] = DB::table('customers')
+						->where('customers.id',$data['order']->customer_id)->first();						
+				
+			return $this->view('process_detail',$data);	
+
+		}
+
 
 	    /*
 	    | ---------------------------------------------------------------------- 
@@ -345,15 +862,36 @@
 	    */    
 	    public function hook_row_index($column_index,&$column_value) {	        
 	    	//Your code here
+			// Formateando pedido
+			if($column_index == 1){
+				$column_value = 'Pedido N° '. str_pad($column_value,4,"0",STR_PAD_LEFT);
+			}			
 			// Actualizando el formato de las fechas
-			if($column_index == 2 || $column_index == 4){
-				$column_value = date("d/m/Y",strtotime($column_value));
+			if($column_index == 2 || $column_index == 4 || $column_index == 6){
+				if ($column_value<>""){
+					$column_value = date("d/m/Y",strtotime($column_value));
+				}else{
+					$column_value = "-";
+				}
 
 			}
 			// Formateando porcentaje
 			if($column_index == 5){
 				$column_value = number_format($column_value, 2) . ' %';
 			}
+			// Formateando el estado
+			if($column_index == 7){
+				if ($column_value==1){
+					$column_value="Editable";
+				}
+				if ($column_value==2){
+					$column_value="Finalizado";
+				}
+			}
+			/*if($column_index == 8){
+				dd($column_value);
+			}*/
+			
 	    }
 
 	    /*
@@ -365,8 +903,10 @@
 	    */
 	    public function hook_before_add(&$postdata) {        
 	        //Your code here
+			
 			$postdata['start_date'] = date("Y-m-d",strtotime($postdata['start_date']));
 			$postdata['deadline'] = date("Y-m-d",strtotime($postdata['deadline']));
+			
 	    }
 
 	    /* 
@@ -378,6 +918,16 @@
 	    */
 	    public function hook_after_add($id) {        
 	        //Your code here
+			$process = DB::table('processes')
+			->where('id','=',$id)->get();
+			/*
+			Cambiar a estado 2 "En proceso" del pedido, al registrar un avance productivo
+			Estado 2 "En proceso", no permite editar el pedido
+			*/
+			DB::table('orders')
+			->where('id', $process[0]->order_id)
+			->update(['state' => 2]);
+
 
 	    }
 
@@ -391,8 +941,20 @@
 	    */
 	    public function hook_before_edit(&$postdata,$id) {        
 	        //Your code here
+			//dd($postdata['advance'] );
 			$postdata['start_date'] = date("Y-m-d",strtotime($postdata['start_date']));
 			$postdata['deadline'] = date("Y-m-d",strtotime($postdata['deadline']));
+			if($postdata['finalizar']==1){//verificando valor auxiliar si el proceso fue finalizado
+				$fecha_fin = Carbon::now();
+				//dd($fecha_fin);
+				//$postdata['finish_date'] = date("Y-m-d",$fecha_fin->toDateTimeString());
+				$postdata['finish_date'] = $fecha_fin->format("Y-m-d");
+				//dd($postdata['finish_date'] );
+				$postdata['state'] = 2;
+			}
+
+
+
 	    }
 
 	    /* 
@@ -428,12 +990,56 @@
 	    */
 	    public function hook_after_delete($id) {
 	        //Your code here
+			DB::table('processes')
+			->where('id', $id)
+			->update(['state' => 0]);
 
+			$process = DB::table('processes')
+			->where('id','=',$id)->get();
+			/*
+			Al Anular un avance productivo, se actualiza el estado del pedido a 1 "Registrado"
+			*/
+			DB::table('orders')
+			->where('id', $process[0]->order_id)
+			->update(['state' => 1]);
 	    }
 
 
 
 	    //By the way, you can still create your own method in here... :) 
+		
+		public function getFillCustomer($id){
+			/*$data = DB::table('customers')
+				->where('id',DB::table('orders')
+					->select('customer_id')
+					->where('id','=',$id))->get();
+			*/
+			//$data = DB::table('orders')->where('id','=',$id)->get();
+			$order = DB::table('orders')
+				->where('id','=',$id)->get();
+			$data = DB::table('customers')
+				->where('id','=',$order[0]->customer_id)->get();
 
+			return $data;
+			//return $this->view('welcome',$data);
+		}
+
+		public function getFillOrder($id){
+			$data = DB::table('orders')
+				->where('id','=',$id)->get();
+			return $data;
+		}
+
+		public function getFillOrderDetails($id){
+			$data = DB::table('order_details')
+				->join('garments','garments.id','=','order_details.garment_id')
+				->join('types_garments','types_garments.id','=','garments.type_garment_id')
+				->join('sizes','sizes.id','=','garments.size_id')
+				->join('colors','colors.id','=','garments.color_id')												
+				->join('materials','materials.id','=','garments.material_id')
+				->select('types_garments.description as tg_description','garments.gender','sizes.description as s_description','colors.name as c_name','materials.name as m_name','order_details.quantity')				
+				->where('order_details.order_id','=',$id)->get();
+			return $data;
+		}
 
 	}
