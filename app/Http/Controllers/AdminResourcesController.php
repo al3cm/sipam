@@ -36,6 +36,8 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 			$this->col[] = ["label"=>"Cantidad de prendas","name"=>"batch"];
 			$this->col[] = ["label"=>"Fecha de entrega","name"=>"deadline"];
 			$this->col[] = ["label"=>"% de Avance","name"=>"advance"];
+			$this->col[] = ["label"=>"Insumos","name"=>"id"];	
+			$this->col[] = ["label"=>"Tareas pendientes","name"=>"id"];	
 			$this->col[] = ["label"=>"Fecha de fin","name"=>"finish_date"];
 			$this->col[] = ["label"=>"Estado","name"=>"state"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
@@ -332,8 +334,8 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 											 \"<input type='hidden' name='detalledelproceso-quantity[]' value='\" + result[i].quantity + \"'/>\" +
 											 \"</td>\";
 									trRow += \"<td>\" +
-											 \"<a href='#panel-form-detalledelprocesoi' onclick='editRowdetalledelprocesoi(this)' class='btn btn-warning btn-xs'><i class='fa fa-pencil'></i></a> \" +
-											 \"<a href='javascript:void(0)' onclick='deleteRowdetalledelprocesoi(this)' class='btn btn-danger btn-xs'><i class='fa fa-trash'></i></a></td>\";
+											 \"<a href='javascript:void(0)' onclick='editRowdetalledelprocesoi(this)' class='btn btn-warning btn-xs' title='Editar insumo'><i class='fa fa-pencil'></i></a> \" +
+											 \"<a href='javascript:void(0)' onclick='deleteRowdetalledelprocesoi(this)' class='btn btn-danger btn-xs' title='Eliminar insumo'><i class='fa fa-trash'></i></a></td>\";
 									trRow += '</tr>';
 									
 								}
@@ -346,7 +348,7 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 								console.log(\"Dentro del else: \" + result.length);
 								if ($('#table-detalledelprocesoi tbody tr').length == 0) {
 									var colspan = $('#table-detalledelprocesoi thead tr th').length;
-									$('#table-detalledelprocesoi tbody').html(\"<tr class='trNull'><td colspan='\" + colspan + \"' align='center'>No tenemos datos disponibles</td></tr>\");
+									$('#table-detalledelprocesoi tbody').html(\"<tr class='t'><td colspan='\" + colspan + \"' align='center'>No tenemos datos disponibles</td></tr>\");
 								}
 							}
 						}
@@ -354,7 +356,7 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 						console.log(\"error\");
 					  });
 			}
-
+//------------------------------------------------------------------------------
 			$('#add-supply-detail').submit(function(e){
 				e.preventDefault();
 
@@ -437,34 +439,85 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 				hideModaldetalledelprocesouser_id();
 			}
 
-			var currentRow = null;
+			var currentRowt = null;
 
 			function resetFormdetalledelprocesot() {
 				$('#panel-form-detalledelprocesot').find(\"input[type=text],input[type=number],select,textarea\").val('');
 				$('#panel-form-detalledelprocesot').find(\".select2\").val('').trigger('change');
+				$('#escogerdatot').prop('disabled', false);
+				if(currentRowt != null){
+					currentRowt.removeClass('warning');
+					currentRowt = null;
+					$('#btn-add-table-detalledelprocesot').val('Agregar a la Tabla');
+				}
 			}
 		
 			function deleteRowdetalledelprocesot(t) {
 		
-				if (confirm(\"Estás Seguro?\")) {
-					$(t).parent().parent().remove();
-					if ($('#table-detalledelprocesot tbody tr').length == 0) {
-						var colspan = $('#table-detalledelprocesot thead tr th').length;
-						$('#table-detalledelprocesot tbody').html(\"<tr class='trNull'><td colspan='\" + colspan + \"' align='center'>No tenemos datos disponibles</td></tr>\");
+				swal({
+					title: \"¿Estás seguro de eliminar tarea?\",
+					text: \"Una vez eliminado, no se podrá recuperar\",
+					type: 'warning',
+					showCancelButton: true,
+					confirmButtonText: 'Si',
+					cancelButtonText: 'No',
+					reverseButtons: true
+				}, function (willDelete){
+					if (willDelete){
+						var p = $(t).parent().parent(); //parentTR
+						var id = p.find(\".user_id .task_detail_id\").val();
+						eliminardetalletarea(id);
+						console.log(\"Elemento eliminado\");
+						refreshdetalledelprocesot();
+					}else{
+						console.log(\"Eliminación cancelada\");
 					}
-				}
+				});
+				
+			}
+
+			function eliminardetalletarea(id){
+				
+				var _token = $('input[name=_token]').val();
+								
+				console.log(\"id a eliminar: \" + id);
+				
+				$.ajax({
+					type	: 'POST',
+					url 	: 'delete-task',
+					data	: {
+						id : id,
+						_token : _token
+					},
+					success	: function(response){
+						if(response){
+							
+							refreshdetalledelprocesot();
+							
+						}
+					}
+				}).fail(function(){
+					console.log(\"error\");
+				});
 			}
 		
 			function editRowdetalledelprocesot(t) {
+
+				if(currentRowt != null){
+					currentRowt.removeClass('warning');
+				}
 				var p = $(t).parent().parent(); //parentTR
-				currentRow = p;
+				currentRowt = p;
 				p.addClass('warning');
 				$('#btn-add-table-detalledelprocesot').val('Guardar Cambios');
 				$('#detalledelprocesouser_id .input-label').val(p.find(\".user_id .td-label\").text());
 				$('#detalledelprocesouser_id .input-id').val(p.find(\".user_id input\").val());
+				$('#detalledelprocesouser_id .input-id-2').val(p.find(\".user_id .task_detail_id\").val());
 				$('#detalledelprocesotitle').val(p.find(\".title input\").val());
 				$('#detalledelprocesodescription').val(p.find(\".description input\").val());
 				$('#detalledelprocesocheck').val(p.find(\".checkval\").val());
+				$('#escogerdatot').prop('disabled', true);
+
 			}
 		
 			function validateFormdetalledelprocesot() {
@@ -483,57 +536,243 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 					return false;
 				}
 			}
-		
-			function addToTabledetalledelprocesot() {
-		
+
+			function refreshdetalledelprocesot(){
+				$('#table-detalledelprocesot tbody').empty();
+				console.log(\"Llenando detalles de tareas\");
+				var id = $('#process_id').val();
+				console.log(\"id: \" + id);
+				var trRow = '';
+				$.ajax(
+					{ 
+						type: 'POST', 
+						url: 'list-tasks/' + id, 
+						data: '', 
+						success: function(result) { 
+							console.log(\"Cantidad de elementos: \" + result.length);
+						
+							if(result.length>0){
+								console.log(\"Dentro del if: \" + result.length);
+								for (var i = 0; i < result.length; i++) {
+									
+									trRow += '<tr>';
+									trRow += \"<td class='title'>\" + result[i].title +
+											 \"<input type='hidden' name='detalledelproceso-title[]' value='\" + result[i].title + \"'/>\" +
+											 \"</td>\";
+									trRow += \"<td class='user_id'><span class='td-label'>\" + result[i].responsable + \"</span>\" +
+											 \"<input type='hidden' name='detalledelproceso-user_id[]' value='\" + result[i].user_id + \"'/>\" +
+											 \"<input type='hidden' class='task_detail_id' name='detalledelproceso-task_detail_id[]' value='\" + result[i].id + \"'/>\" +
+											 \"</td>\";
+									trRow += \"<td class='description'>\" + result[i].description +
+											 \"<input type='hidden' name='detalledelproceso-description[]' value='\" + result[i].description + \"'/>\" +
+											 \"</td>\";
+									trRow += \"<td class='finished'>\";
+									if(result[i].finished == 1){
+										trRow += \"Si\";
+									}else{
+										trRow += \"No\";
+									}
+									trRow += \"<td class='finish_date'>\" + result[i].finish_date +
+											 \"<input type='hidden' name='detalledelproceso-finish_date[]' value='\" + result[i].finish_date + \"'/>\" +
+											 \"</td>\";		
+
+									trRow += \"<input type='hidden' class='checkval' name='detalledelproceso-finished[]' value='\" + result[i].finished + \"'/>\" +
+											 \"</td>\";
+
+									trRow += \"<td>\" +
+											 \"<a href='javascript:void(0)' onclick='editRowdetalledelprocesot(this)' class='btn btn-warning btn-xs' title='Editar tarea'><i class='fa fa-pencil'></i></a> \";
+											 
+											 if(result[i].finished == 1){
+												trRow += \"<a href='javascript:void(0)' onclick='finishedRowdetalledelprocesot(this)' class='btn btn-info btn-xs' title='Reactivar tarea'><i class='fa fa-rotate-left'></i></a> \";
+											}else{
+												trRow += \"<a href='javascript:void(0)' onclick='finishedRowdetalledelprocesot(this)' class='btn btn-success btn-xs' title='Terminar tarea'><i class='fa fa-check'></i></a> \";
+											}
+
+									trRow += \"<a href='javascript:void(0)' onclick='deleteRowdetalledelprocesot(this)' class='btn btn-danger btn-xs' title='Eliminar tarea'><i class='fa fa-trash'></i></a></td>\";
+									trRow += '</tr>';
+									
+								}
+																
+								$('#table-detalledelprocesot tbody').prepend(trRow);
+								$('#btn-add-table-detalledelprocesot').val('Agregar a la Tabla');
+								$('#btn-reset-form-detalledelprocesot').click();
+	
+							}else{
+								console.log(\"Dentro del else: \" + result.length);
+								if ($('#table-detalledelprocesot tbody tr').length == 0) {
+									var colspan = $('#table-detalledelprocesot thead tr th').length;
+									$('#table-detalledelprocesot tbody').html(\"<tr class='trNullt'><td colspan='\" + colspan + \"' align='center'>No tenemos datos disponibles</td></tr>\");
+								}
+							}
+						}
+					}).fail(function() {
+						console.log(\"error\");
+					  });
+			}
+
+			$('#add-task').submit(function(e){
+				e.preventDefault();
+
 				if (validateFormdetalledelprocesot() == false) {
 					return false;
 				}
 
-
-
-		
-				var trRow = '<tr>';
-				trRow += \"<td class='user_id'><span class='td-label'>\" + $('#detalledelprocesouser_id .input-label').val() + \"</span>\" +
-						\"<input type='hidden' name='detalledelproceso-user_id[]' value='\" + $('#detalledelprocesouser_id .input-id').val() + \"'/>\" +
-						\"</td>\";
-				trRow += \"<td class='title'>\" + $('#detalledelprocesotitle').val() +
-						\"<input type='hidden' name='detalledelproceso-title[]' value='\" + $('#detalledelprocesotitle').val() + \"'/>\" +
-						\"</td>\";
-				trRow += \"<td class='description'>\" + $('#detalledelprocesodescription').val() +
-						\"<input type='hidden' name='detalledelproceso-description[]' value='\" + $('#detalledelprocesodescription').val() + \"'/>\" +
-						\"</td>\";
-				trRow += \"<td class='check'>\";
-				console.log($('#detalledelprocesocheck').val());
-				if($('#detalledelprocesocheck').val() == 'false'){
-					console.log('dentro de falso');
-					trRow += \"<input type='checkbox' id='\" + $('#detalledelprocesouser_id .input-id').val() + \"'/>\";
+				if(currentRowt == null){
+					agregartarea();
+				}else{
+					editartarea();
 				}
-				if($('#detalledelprocesocheck').val() == 'true'){
-					console.log('dentro de true');
-					trRow += \"<input type='checkbox' checked id='\" + $('#detalledelprocesouser_id .input-id').val() + \"'/>\";
-				}
-				trRow += \"<input type='hidden' name='detalledelproceso-check[]' value='\" + $('#detalledelprocesocheck').val() + \"' class='checkval'/>\" +
-						\"</td>\";						
-				trRow += \"<td>\" +
-						\"<a href='#panel-form-detalledelprocesot' onclick='editRowdetalledelprocesot(this)' class='btn btn-warning btn-xs'><i class='fa fa-pencil'></i></a> \" +
-						\"<a href='javascript:void(0)' onclick='deleteRowdetalledelprocesot(this)' class='btn btn-danger btn-xs'><i class='fa fa-trash'></i></a></td>\";
-				trRow += '</tr>';
-				$('#table-detalledelprocesot tbody .trNull').remove();
-				if (currentRow == null) {
-					$(\"#table-detalledelprocesot tbody\").prepend(trRow);
-				} else {
+				
+
+			});
+
+	
+			function agregartarea(){
+				var user_id = $('#detalledelprocesouser_id .input-id').val();
+				var process_id = $('#process_id').val();
+				var title = $('#detalledelprocesotitle').val();
+				var description = $('#detalledelprocesodescription').val();
+				var _token = $('input[name=_token]').val();
+				
+				if (currentRow != null) {
 					currentRow.removeClass('warning');
-					currentRow.replaceWith(trRow);
 					currentRow = null;
-				}
-				$('#btn-add-table-detalledelprocesot').val('Agregar a la Tabla');
-				$('#btn-reset-form-detalledelprocesot').click();
+				} 
+				
+				console.log(\"user_id: \" + user_id);
+				console.log(\"process_id: \" + process_id);
+				console.log(\"title: \" + title);
+				console.log(\"description: \" + description);
+
+				$.ajax({
+					type	: 'POST',
+					url 	: 'add-task',
+					data	: {
+						user_id : user_id,
+						process_id : process_id,
+						title : title,
+						description : description,
+						_token : _token
+					},
+					success	: function(response){
+						if(response){
+							
+							refreshdetalledelprocesot();
+							
+						}
+					}
+				}).fail(function(){
+					console.log(\"error\");
+				});
+			}
+
+			function editartarea(){
+				var id = $('#detalledelprocesouser_id .input-id-2').val();
+				var user_id = $('#detalledelprocesouser_id .input-id').val();
+				var process_id = $('#process_id').val();
+				var title = $('#detalledelprocesotitle').val();
+				var description = $('#detalledelprocesodescription').val();
+				var _token = $('input[name=_token]').val();
+				
+				if (currentRow != null) {
+					currentRow.removeClass('warning');
+					currentRow = null;
+				} 
+				
+				console.log(\"id: \" + id);
+				console.log(\"user_id: \" + user_id);
+				console.log(\"process_id: \" + process_id);
+				console.log(\"title: \" + title);
+				console.log(\"description: \" + description);
+
+				$.ajax({
+					type	: 'POST',
+					url 	: 'edit-task',
+					data	: {
+						id : id,
+						title : title,
+						description : description,
+						_token : _token
+					},
+					success	: function(response){
+						if(response){
+							
+							refreshdetalledelprocesot();
+							
+						}
+					}
+				}).fail(function(){
+					console.log(\"error\");
+				});
+			}
+
+			function finishedRowdetalledelprocesot(t) {
+				var p = $(t).parent().parent(); //parentTR
+				var id = p.find(\".user_id .task_detail_id\").val();
+				var finished = 0;
+				var titulo='';
+				var texto='';
+				if (p.find(\".checkval\").val()==0){
+					finished=1;
+					titulo = '¿Estás seguro de terminar la tarea?';
+					texto = 'El sistema registrará la fecha y hora de término de la tarea';
+				}else{
+					finished=0;
+					titulo = '¿Estás seguro de reactivar la tarea?';
+					texto = 'No se podrá recuperar la fecha de término anterior';					
+				}				
+				swal({
+					title: titulo,
+					text: texto,
+					type: 'warning',
+					showCancelButton: true,
+					confirmButtonText: 'Si',
+					cancelButtonText: 'No',
+					reverseButtons: true
+				}, function (willCheck){
+					if (willCheck){
+
+						terminartarea(id,finished);
+						console.log(\"Tarea marcada\");
+
+					}else{
+						console.log(\"Marca cancelada\");
+					}
+					
+				});
+
 			}	
 
-
-
-
+			function terminartarea(id,f){
+				var _token = $('input[name=_token]').val();
+				
+				if (currentRow != null) {
+					currentRow.removeClass('warning');
+					currentRow = null;
+				} 
+				
+				console.log(\"id: \" + id);
+				console.log(\"finished: \" + f);
+				
+				$.ajax({
+					type	: 'POST',
+					url 	: 'finish-task',
+					data	: {
+						id : id,
+						finished : f,
+						_token : _token
+					},
+					success	: function(response){
+						if(response){
+							
+							refreshdetalledelprocesot();
+							
+						}
+					}
+				}).fail(function(){
+					console.log(\"error\");
+				});
+			}
 
 			$(function(){
 
@@ -618,22 +857,6 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 						return true; 
 					}
 				}
-
-			
-
-
-				
-
-				
-
-
-
-
-
-		
-
-				
-
 
 			});";
 
@@ -812,7 +1035,7 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 							$column_value = 'Pedido N° '. str_pad($column_value,4,"0",STR_PAD_LEFT);
 						}			
 						// Actualizando el formato de las fechas
-						if($column_index == 2 || $column_index == 4 || $column_index == 6){
+						if($column_index == 2 || $column_index == 4 || $column_index == 8){
 							if ($column_value<>""){
 								$column_value = date("d/m/Y",strtotime($column_value));
 							}else{
@@ -824,10 +1047,32 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 						if($column_index == 5){
 							$column_value = number_format($column_value, 2) . ' %';
 						}
-						// Formateando el estado
+						//Formateando insumos
+						if($column_index == 6){
+							$id = $column_value;
+							$insumos = DB::table('supply_details')
+							->where('supply_details.process_id','=',$id)
+							->count();
+							if($insumos>0){
+								$column_value = "Si";
+							}else{
+								$column_value = "No";	
+							}
+						}
+						//Formateando tareas pendientes						
 						if($column_index == 7){
+							$id = $column_value;
+							$column_value = DB::table('tasks')
+							->where('tasks.process_id','=',$id)
+							->where('tasks.check','=',0)
+							->count();
+						}		
+						
+						
+						// Formateando el estado
+						if($column_index == 9){
 							if ($column_value==1){
-								$column_value="Editable";
+								$column_value="En proceso";
 							}
 							if ($column_value==2){
 								$column_value="Finalizado";
@@ -942,13 +1187,49 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 				$data['customer'] = DB::table('customers')
 							->where('customers.id',$data['order']->customer_id)->first();						
 				
-				$data['supplies'] = DB::table('list_supply_details_view')
-							->where('list_supply_details_view.process_id','=',$id)->get();
+				$data['supplies'] = DB::table('view_list_supply_details')
+							->where('view_list_supply_details.process_id','=',$id)->get();
+
+				$data['tasks'] = DB::table('view_list_tasks')
+							->where('view_list_tasks.process_id','=',$id)->get();
 
 				return $this->view('resource_edit',$data);	
 			}
 		
 		}
+
+		public function getDetail($id){
+			//dd($id);
+			$data['page_title']  = "Detalle de recursos de un proceso productivo";
+			$data['editar'] = 1;
+			$data['row'] = DB::table('processes')
+						->where('processes.id',$id)->first();
+
+			$data['order'] = DB::table('orders')
+						->where('orders.id',$data['row']->order_id)->first();
+						
+			$data['order_details'] = DB::table('order_details')
+						->join('garments','garments.id','=','order_details.garment_id')
+						->join('types_garments','types_garments.id','=','garments.type_garment_id')
+						->join('sizes','sizes.id','=','garments.size_id')
+						->join('colors','colors.id','=','garments.color_id')												
+						->join('materials','materials.id','=','garments.material_id')
+						->select('types_garments.description as tg_description','garments.gender','sizes.description as s_description','colors.name as c_name','materials.name as m_name','order_details.quantity')				
+						->where('order_details.order_id',$data['row']->order_id)->get();
+
+			$data['customer'] = DB::table('customers')
+						->where('customers.id',$data['order']->customer_id)->first();						
+
+			$data['supplies'] = DB::table('view_list_supply_details')
+						->where('view_list_supply_details.process_id','=',$id)->get();
+
+			$data['tasks'] = DB::table('view_list_tasks')
+						->where('view_list_tasks.process_id','=',$id)->get();
+
+			return $this->view('resource_detail',$data);	
+
+		}
+
 
 
 		public function addSupplyDetail(Request $request){
@@ -1013,5 +1294,68 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 			return back();
 
 		}		
+
+
+		public function getTasks($id){
+			
+			$data = DB::table('view_list_tasks')
+				->where('view_list_tasks.process_id','=',$id)->get();
+			return $data;
+
+		}
+
+		public function addTask(Request $request){
+
+			if($request->description == null){
+				$request->description = '';
+			}
+
+			DB::table('tasks')->insert([
+				'title' => $request->title,
+				'description' => $request->description,
+				'process_id' => $request->process_id,
+				'user_id' => $request->user_id
+				]);
+
+			return back();
+
+		}		
+
+		public function editTask(Request $request){
+
+			if($request->description == null){
+				$request->description = '';
+			}
+
+			DB::table('tasks')
+				->where('tasks.id', $request->id)
+				->update([
+					'title' => $request->title,
+					'description' => $request->description
+					]);
+
+			return back();
+		}	
+
+
+		public function finishTask(Request $request){
+
+			DB::table('tasks')
+				->where('tasks.id', $request->id)
+				->update([
+					'check' => $request->finished
+					]);
+
+			return back();
+		}			
+
+		public function deleteTask(Request $request){
+			
+			DB::table('tasks')
+				->where('tasks.id', '=', $request->id)->delete();
+
+			return back();
+
+		}	
 
 	}

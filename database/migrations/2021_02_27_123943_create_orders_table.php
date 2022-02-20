@@ -16,7 +16,7 @@ class CreateOrdersTable extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->bigIncrements('id');
             //$table->string('order_number',10)->unique();
-            $table->tinyInteger('type');
+            $table->tinyInteger('type');//1: Proforma 2: Pedido
             $table->date('order_date');
             $table->date('delivery_date');
             $table->double('subtotal',8,2)->default(0);
@@ -24,7 +24,7 @@ class CreateOrdersTable extends Migration
             $table->double('total',8,2)->default(0);
             $table->double('advance_payment',8,2)->nullable()->default(0);
             $table->double('pending_payment',8,2)->nullable()->default(0);
-            $table->tinyInteger('state')->default(1);
+            $table->tinyInteger('state')->default(1);//0:Inactivo/Anulado 1: Registrado 2: En proceso 3: Proceso finalizado 4: Pedido finalizado 
             $table->bigInteger('customer_id');
             $table->timestamps();
             $table->softDeletes();

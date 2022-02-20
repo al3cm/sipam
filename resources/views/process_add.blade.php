@@ -203,6 +203,7 @@
                         <th>1. Fase de corte</th>
                         <td class="cen">
                             <input id="can0" name="cutting_batch" type="text" class="an70 cen" value="0">
+                            <input id="acan0" type="hidden" value="0">
                         </td>
                         <td class="cen"><label class="margen0" id="tcan0"></label></td>
                         <td class="cen"><label class="margen0"id="pcan0"></label></td>
@@ -211,6 +212,7 @@
                         <th>2. Fase de habilitado</th>
                         <td class="cen">
                             <input id="can1" name="enabled_batch" type="text" class="an70 cen" value="0">                            
+                            <input id="acan1" type="hidden" value="0">
                         </td>
                         <td class="cen"><label class="margen0" id="tcan1"></label></td>
                         <td class="cen"><label class="margen0" id="pcan1"></label></td>                    
@@ -219,6 +221,7 @@
                         <th>3. Fase de confección</th>     
                         <td class="cen">
                             <input id="can2" name="confection_batch" type="text" class="an70 cen" value="0">                               
+                            <input id="acan2" type="hidden" value="0">                        
                         </td>
                         <td class="cen"><label class="margen0" id="tcan2"></label></td>
                         <td class="cen"><label class="margen0" id="pcan2"></label></td>               
@@ -227,6 +230,7 @@
                         <th>4. Fase de acabado</th>
                         <td class="cen">
                             <input id="can3" name="finishing_batch" type="textarea" class="an70 cen" value="0">                               
+                            <input id="acan3" type="hidden" value="0">                             
                         </td>
                         <td class="cen"><label class="margen0" id="tcan3"></label></td>
                         <td class="cen"><label class="margen0" id="pcan3"></label></td>                    

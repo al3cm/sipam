@@ -22,7 +22,7 @@ class CreateListTasksView extends Migration
             t.title,
             t.description,
             t.check finished,
-            t.finish_date
+            IFNULL(DATE_FORMAT(t.finish_date,'%d/%m/%Y %h:%i:%s %p'),'-') finish_date
         FROM sipam.tasks t
         INNER JOIN processes p ON p.id=t.process_id
         INNER JOIN sipam.cms_users u ON u.id=t.user_id

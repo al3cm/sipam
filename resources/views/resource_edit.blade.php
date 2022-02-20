@@ -285,7 +285,7 @@
     
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <i class='fa fa-table'></i> Tabla de Detalles
+                    <i class='fa fa-table'></i> Insumos asignados
                 </div>
                 <div class="panel-body no-padding table-responsive" style="max-height: 400px;overflow: auto;">
                     <table id='table-detalledelprocesoi' class='table table-striped table-bordered'>
@@ -313,8 +313,8 @@
                                             <input type='hidden' name='detalledelproceso-quantity[]' value='{{$s->quantity}}'/>
                                         </td>
                                         <td>
-                                            <a href='javascript:void(0)' onclick='editRowdetalledelprocesoi(this)' class='btn btn-warning btn-xs'><i class='fa fa-pencil'></i></a>
-                                            <a href='javascript:void(0)' onclick='deleteRowdetalledelprocesoi(this)' class='btn btn-danger btn-xs'><i class='fa fa-trash'></i></a>
+                                            <a href='javascript:void(0)' onclick='editRowdetalledelprocesoi(this)' class='btn btn-warning btn-xs' title='Editar insumo'><i class='fa fa-pencil'></i></a>
+                                            <a href='javascript:void(0)' onclick='deleteRowdetalledelprocesoi(this)' class='btn btn-danger btn-xs' title='Eliminar insumo'><i class='fa fa-trash'></i></a>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -341,82 +341,127 @@
         <div class="panel-body">
             <div class='row'>
                 <div class='col-sm-10'>
-                    <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <i class="fa fa-pencil-square-o"></i> Formulario
-                        </div>
-                        <div class="panel-body child-form-area">
-                            <div class='form-group bloque'>
-                                <label class="control-label col-sm-2">Responsable<span class="text-danger" title="Este campo es requerido">*</span></label>
-                                <div class="col-sm-10">
-                                    <div id='detalledelprocesouser_id' class="input-group">
-                                        <input type="hidden" class="input-id">
-                                        <input type="text" class="form-control input-label required" readonly>
-                                        <span class="input-group-btn">
-                                            <button class="btn btn-primary" onclick="showModaldetalledelprocesouser_id()" type="button"><i class='fa fa-search'></i> Escoger Dato</button>
-                                        </span>
+                    <form id="add-task" class="panel panel-default">
+                        @csrf
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <i class="fa fa-pencil-square-o"></i> Formulario
+                            </div>
+                            <div class="panel-body child-form-area">
+                                <div class='form-group bloque'>
+                                    <label class="control-label col-sm-2">Responsable<span class="text-danger" title="Este campo es requerido">*</span></label>
+                                    <div class="col-sm-10">
+                                        <div id='detalledelprocesouser_id' class="input-group">
+                                            <input type="hidden" class="input-id">
+                                            <input type="hidden" class="input-id-2">
+                                            <input type="text" class="form-control input-label required" readonly>
+                                            <span class="input-group-btn">
+                                                <button id="escogerdatot" class="btn btn-primary" onclick="showModaldetalledelprocesouser_id()" type="button"><i class='fa fa-search'></i> Escoger Dato</button>
+                                            </span>
+                                        </div>
+                                        <!-- /input-group -->
+                                        <div id='modal-datamodal-detalledelprocesouser_id' class="modal" tabindex="-1" role="dialog">
+                                            <div class="modal-dialog  " role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                        <h4 class="modal-title"><i class='fa fa-search'></i> Escoger responsable de la tarea </h4>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <iframe id='iframe-modal-detalledelprocesouser_id' style="border:0;height: 430px;width: 100%" src=""></iframe>
+                                                    </div>
+                                                </div><!-- /.modal-content -->
+                                            </div><!-- /.modal-dialog -->
+                                        </div><!-- /.modal -->
                                     </div>
-                                    <!-- /input-group -->
-                                    <div id='modal-datamodal-detalledelprocesouser_id' class="modal" tabindex="-1" role="dialog">
-                                        <div class="modal-dialog  " role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                        <span aria-hidden="true">&times;</span>
-                                                    </button>
-                                                    <h4 class="modal-title"><i class='fa fa-search'></i> Escoger responsable de la tarea </h4>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <iframe id='iframe-modal-detalledelprocesouser_id' style="border:0;height: 430px;width: 100%" src=""></iframe>
-                                                </div>
-                                            </div><!-- /.modal-content -->
-                                        </div><!-- /.modal-dialog -->
-                                    </div><!-- /.modal -->
                                 </div>
-                            </div>
-                            &nbsp;
-                            <div class='form-group bloque'>
-                                <label class="control-label col-sm-2">Tarea<span class="text-danger" title="Este campo es requerido">*</span></label>
-                                <div class="col-sm-10">
-                                    <input id='detalledelprocesotitle' type='text' name='child-title' class='form-control required'/>
+                                &nbsp;
+                                <div class='form-group bloque'>
+                                    <label class="control-label col-sm-2">Tarea<span class="text-danger" title="Este campo es requerido">*</span></label>
+                                    <div class="col-sm-10">
+                                        <input id='detalledelprocesotitle' type='text' name='child-title' class='form-control required'/>
+                                    </div>
                                 </div>
-                            </div>
-                            &nbsp;
-                            <div class='form-group bloque'>
-                                <label class="control-label col-sm-2">Descripción</label>
-                                <div class="col-sm-10">
-                                    <input id='detalledelprocesodescription' type='text' name='child-description' class='form-control'/>
+                                &nbsp;
+                                <div class='form-group bloque'>
+                                    <label class="control-label col-sm-2">Descripción</label>
+                                    <div class="col-sm-10">
+                                        <input id='detalledelprocesodescription' type='text' name='child-description' class='form-control'/>
+                                    </div>
                                 </div>
+                                <input type="hidden" id="detalledelprocesocheck" value="false">
                             </div>
-                            <input type="hidden" id="detalledelprocesocheck" value="false">
+                            <div class="panel-footer" align="right">
+                                <input type='button' class='btn btn-default' id="btn-reset-form-detalledelprocesot" onclick="resetFormdetalledelprocesot()" value='Resetear'/>
+                                <!--<input type='button' id='btn-add-table-detalledelprocesot' class='btn btn-primary' onclick="addToTabledetalledelprocesot()" value='Agregar a la Tabla'/>-->
+                                <input type='submit' id='btn-add-table-detalledelprocesot' class='btn btn-primary' value='Agregar a la Tabla'/>
+                            </div>
                         </div>
-                        <div class="panel-footer" align="right">
-                            <input type='button' class='btn btn-default' id="btn-reset-form-detalledelprocesot" onclick="resetFormdetalledelprocesot()" value='Resetear'/>
-                            <input type='button' id='btn-add-table-detalledelprocesot' class='btn btn-primary' onclick="addToTabledetalledelprocesot()" value='Agregar a la Tabla'/>
-                        </div>
-                    </div>
+                    </form>
                 </div>
             </div>
     
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <i class='fa fa-table'></i> Tabla de Detalles
+                    <i class='fa fa-table'></i> Tareas registradas
                 </div>
                 <div class="panel-body no-padding table-responsive" style="max-height: 400px;overflow: auto;">
                     <table id='table-detalledelprocesot' class='table table-striped table-bordered'>
                         <thead>
                             <tr>
-                                <th>Responsable</th>
                                 <th>Tarea</th>
+                                <th>Responsable</th>
                                 <th>Descripción</th>
                                 <th>Terminada</th>
-                                <th width="90px">Acción</th>
+                                <th>Fecha de término</th>
+                                <th width="100px">Acción</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="trNull">
-                                <td colspan="6" align="center">No tenemos datos disponibles</td>
-                            </tr>
+                            @if (count($tasks)>0)
+                                @foreach ($tasks as $t)
+                                <tr>
+                                        <td class='title'> {{$t->title}}
+                                            <input type='hidden' name='detalledelproceso-title[]' value='{{$t->title}}'/>
+                                        </td>
+                                        <td class='user_id'>
+                                            <span class='td-label'> {{$t->responsable}} </span>
+                                            <input type='hidden' name='detalledelproceso-user_id[]' value=' {{$t->user_id}}'/>
+                                            <input type='hidden' class="task_detail_id" name='detalledelproceso-task_detail_id[]' value='{{$t->id}}'/>
+                                        </td>
+                                        <td class='description'> {{$t->description}} 
+                                            <input type='hidden' name='detalledelproceso-description[]' value='{{$t->description}}'/>
+                                        </td>
+                                        <td class='finished'>
+                                            @if ($t->finished == 1)
+                                                Si
+                                            @else
+                                                No
+                                            @endif
+                                            <input type='hidden' class='checkval' name='detalledelproceso-finished[]' value='{{$t->finished}}'/>
+                                        </td>
+                                        <td class='finish_date'> {{$t->finish_date}} 
+                                            <input type='hidden' name='detalledelproceso-finish_date[]' value='{{$t->finish_date}}'/>
+                                        </td>                                        
+                                        <td>
+                                            <a href='javascript:void(0)' onclick='editRowdetalledelprocesot(this)' class='btn btn-warning btn-xs' title='Editar tarea'><i class='fa fa-pencil'></i></a>
+                                                @if ($t->finished == 1)
+                                                    <a href='javascript:void(0)' onclick='finishedRowdetalledelprocesot(this)' class='btn btn-info btn-xs' title='Reactivar tarea'><i class='fa fa-rotate-left'></i></a>
+                                                @else
+                                                    <a href='javascript:void(0)' onclick='finishedRowdetalledelprocesot(this)' class='btn btn-success btn-xs' title='Terminar tarea'><i class='fa fa-check'></i></a>
+                                                @endif                                            
+                                            <a href='javascript:void(0)' onclick='deleteRowdetalledelprocesot(this)' class='btn btn-danger btn-xs' title='Eliminar tarea'><i class='fa fa-trash'></i></a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr class="trNullt">
+                                    <td colspan="6" align="center">No tenemos datos disponibles</td>
+                                </tr>                                    
+                    
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -427,7 +472,7 @@
     <div class="panel panel-default">
         <div class="panel-footer">
             
-            <a href="{{ url('/admin/processes') }}" class="btn btn-primary" >Regresar</a>
+            <a href="{{ url('/admin/resources') }}" class="btn btn-primary" >Regresar</a>
         </div>
     </div>             
 @endsection

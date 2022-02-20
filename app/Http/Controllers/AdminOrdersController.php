@@ -1,9 +1,10 @@
 <?php namespace App\Http\Controllers;
 
 	use Session;
-	use Request;
+	
 	use DB;
 	use CRUDBooster;
+	use Illuminate\Http\Request;
 
 	class AdminOrdersController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -57,10 +58,10 @@
 				'datamodal_select_to'=>'garment_description,price:garment_price',
 				'required'=>true];
 			
-			$columns[] = ['label'=>'Precio','name'=>'garment_price','type'=>'text','required'=>true];
+			$columns[] = ['label'=>'Precio S/','name'=>'garment_price','type'=>'text','required'=>true];
 			$columns[] = ['label'=>'Cantidad','name'=>'quantity','type'=>'text','required'=>true];
-			$columns[] = ['label'=>'Descuento','name'=>'discount','type'=>'text','value'=>'0'];
-			$columns[] = ['label'=>'Sub Total','name'=>'subtotal','type'=>'number','formula'=>"[quantity] * [garment_price] - [discount]","readonly"=>true,'required'=>true];
+			$columns[] = ['label'=>'Descuento','name'=>'discount','type'=>'text','required'=>true];
+			$columns[] = ['label'=>'Sub Total S/','name'=>'subtotal','type'=>'number','formula'=>"[quantity] * [garment_price] - [discount]","readonly"=>true,'required'=>true];
 
 
 			$this->form[] = [
@@ -71,12 +72,11 @@
 				'table'=>'order_details',
 				'foreign_key'=>'order_id'];
 			
-			$this->form[] = ['label'=>'Sub total','name'=>'subtotal','type'=>'number','validation'=>'required|min:0','width'=>'col-sm-2','readonly'=>'1'];
-			$this->form[] = ['label'=>'Impuesto','name'=>'tax','type'=>'number','validation'=>'required|min:0','width'=>'col-sm-2','readonly'=>'1'];
-			$this->form[] = ['label'=>'Total','name'=>'total','type'=>'number','validation'=>'required|min:0','width'=>'col-sm-2','readonly'=>'1'];
-			$this->form[] = ['label'=>'Adelanto','name'=>'advance_payment','type'=>'text','validation'=>'numeric|min:0','width'=>'col-sm-2'];
-			$this->form[] = ['label'=>'Pago restante','name'=>'pending_payment','type'=>'number','validation'=>'required|min:0','width'=>'col-sm-2','readonly'=>'1'];
-			
+			$this->form[] = ['label'=>'Sub total S/','name'=>'subtotal','type'=>'number','validation'=>'required|min:0','width'=>'col-sm-2','readonly'=>'1'];
+			$this->form[] = ['label'=>'Impuesto S/','name'=>'tax','type'=>'number','validation'=>'required|min:0','width'=>'col-sm-2','readonly'=>'1'];
+			$this->form[] = ['label'=>'Total S/','name'=>'total','type'=>'number','validation'=>'required|min:0','width'=>'col-sm-2','readonly'=>'1'];
+			$this->form[] = ['label'=>'Pago S/','name'=>'advance_payment','type'=>'text','validation'=>'numeric|min:0','width'=>'col-sm-2'];
+			$this->form[] = ['label'=>'Pago restante S/','name'=>'pending_payment','type'=>'number','validation'=>'required|min:0','width'=>'col-sm-2','readonly'=>'1'];
 			
 			# END FORM DO NOT REMOVE THIS LINE
 
@@ -197,11 +197,79 @@
 				$(function(){
 
 
+					$(document).ready(function() { 
+						if($('#enproceso').val()){
+							console.log('Editar pedido en proceso');
+							$('#delivery_date').datepicker('setStartDate', $('#deadline').val());
+						}else{
+							if($('#order_date').val()){
+								$('#delivery_date').datepicker('setStartDate', $('#order_date').val());
+							}
+							if($('#delivery_date').val()){
+								$('#order_date').datepicker('setEndDate', $('#delivery_date').val());
+							}
+
+							setInterval(function(){
+								calcularTotal();
+		
+							},500);
+						}
+
+						
+					});
+
+					$('#grabar').click(function(){
+						console.log('');
+						$('#formulario').submit();
+					});
+					
+					$('#grabarfinalizar').click(function(){
+						console.log('Estado',parseInt($('#state').val()));
+						if(parseInt($('#state').val())==2){
+							sweetAlert(\"¡Upss!\", \"No se puede finalizar el pedido hasta finalizar su proceso productivo\",\"warning\");
+							return false;
+						}
+						if(parseFloat($('#pending_payment').val())>0){
+							sweetAlert(\"¡Upss!\", \"No se puede finalizar el pedido hasta registrar todo el pago\",\"warning\");
+							return false;
+						}
+	
+						swal({
+							title: \"¿Estás seguro de finalizar el pedido?\",
+							text: \"Una vez finalizado, no se podrá editar\",
+							type: 'warning',
+							showCancelButton: true,
+							confirmButtonText: 'Si',
+							cancelButtonText: 'No',
+							reverseButtons: true
+						}, function (Finish){
+							if (Finish){
+								$('#state').val('4');
+								$('#formulario').submit();
+							}else{
+								return false;
+							}
+						});
+	
+					});
+
+
 					$('.input_date').datepicker({
 						format: 'dd-mm-yyyy',
 						todayHighlight: true,
 						autoclose: true,						
 						language: 'es'
+					});
+
+					$('#order_date').on('changeDate',
+					function (selected) {
+						
+						$('#delivery_date').datepicker('setStartDate', $('#order_date').val());
+					});
+	
+					$('#delivery_date').on('changeDate',
+						function (selected) {
+							$('#order_date').datepicker('setEndDate', $('#delivery_date').val());
 					});
 
 					$('#detalledelpedidoquantity').keypress(function(e){
@@ -220,6 +288,27 @@
 						//return esDecimal(e);
 						return filterFloat(e,this);
 					});
+
+
+					$('#advance_payment').blur(function(e){
+						if(parseFloat($('#advance_payment').val())>parseFloat($('#total').val())){
+							sweetAlert(\"¡Upss!\", \"El valor no puede ser mayor al total a pagar por el pedido\", \"warning\");
+							if($('#a_advance_payment').val()){
+								$('#advance_payment').val($('#a_advance_payment').val());
+								calcularTotalEnProceso();
+							}else{
+								$('#advance_payment').val(0);
+							}
+							
+							$('#advance_payment').focus();
+							return false;
+						}else{
+							$('#a_advance_payment').val($('#advance_payment').val());
+							return true;
+						}
+					});
+
+
 
 					function esEntero(key) {
 						var keycode = (key.which) ? key.which : key.keyCode;
@@ -274,15 +363,19 @@
 						
 					}
 
-					
-					setInterval(function(){
+					function calcularTotal(){
 						var subtotal = 0;
 						var tax = 0;
 						var total = 0;
 						var pending = 0;
-						var advance = $('#advance_payment').val().replace(/,/g, '');
-
-									
+						var advance = 0;
+						
+						if(isNaN($('#advance_payment').val())){
+							advance = 0;
+						}else{
+							var advance = $('#advance_payment').val().replace(/,/g, '');
+						}
+					
 						$('#table-detalledelpedido tbody .subtotal').each(function(){
 							var amount = parseInt($(this).text());
 							total += amount;
@@ -291,10 +384,8 @@
 						tax = total * 0.18;
 						subtotal = total - round(tax);
 
-						if(isNaN(advance))
-							pending = total
-						else
-							pending = total - advance;
+						pending = total - advance;
+		
 
 						$('#subtotal').val(round(subtotal));
 						$('#tax').val(round(tax));
@@ -302,8 +393,16 @@
 
 						$('#total').val(round(total));
 						$('#pending_payment').val(pending);
-						
-					},500);
+					}
+
+					function calcularTotalEnProceso(){
+						$('#pending_payment').val($('#total').val()-$('#advance_payment').val());
+					}
+
+					$('#advance_payment').keyup(function(e){
+						calcularTotalEnProceso();
+					});
+
 				});
 				function round(num, decimales = 2) {
 					var signo = (num >= 0 ? 1 : -1);
@@ -364,7 +463,33 @@
 	        | $this->style_css = ".style{....}";
 	        |
 	        */
-	        $this->style_css = NULL;
+	        $this->style_css = $this->style_css = "    .der {text-align:right;} 
+			.izq {text-align:left;} 
+			.cen {text-align:center;} 
+			
+			label {font-weight: normal;} 
+			.edita{width:70px; text-align:center} 
+			.panel-default>.panel-heading {font-weight: bold;}
+			.gris {background-color: #eeeeee;}
+			.flota1 {float: right; margin-top: -5px;}
+			.margen0 {margin: 0px;}
+			.margen1 {margin: 5px;}
+			.margen2 {margin: 0px 8px 0px 8px;}
+			.margen3 {margin: 0px 10px 0px 10px;}
+			.negrita {font-weight:bold;}
+			.pad0808 {padding: 0px 8px 0px 8px;}
+			.an5 {width:5%}
+			.an7 {width:7%}
+			.an8 {width:8%}
+			.an10 {width:10%}
+			.an15 {width:15%}
+			.an20 {width:20%}
+			.an25 {width:25%}
+			.an35 {width:35%}
+			.an50 {width:50%}
+			.dlin {display:inline}
+			.filacel {background-color: aliceblue}
+			.tabla {border: 1px solid #c1bdbd;border-width: 1px}";;
 	        
 	        
 	        
@@ -384,19 +509,39 @@
 		public function getEdit($id)
 		{
 
-			
-			$data['row'] = DB::table('orders')
+			$data['order'] = DB::table('orders')
 						->where('orders.id',$id)->first();
 
-
-			if ($data['row']->state==2) {
+			if ($data['order']->state==4){
 				CRUDBooster::redirectBack(
-					'Los pedidos en estado <b>en proceso</b>, no se pueden <b>editar</b>.'
+					'Los pedidos en estado <b>finalizado</b>, no se pueden <b>editar</b>.'
 				);
+			}
+
+			if ($data['order']->state>1) {
+				$data['page_title']  = "Editar un pedido con proceso productivo en proceso";
+				$data['order_details'] = DB::table('order_details')
+							->join('garments','garments.id','=','order_details.garment_id')
+							->join('types_garments','types_garments.id','=','garments.type_garment_id')
+							->join('sizes','sizes.id','=','garments.size_id')
+							->join('colors','colors.id','=','garments.color_id')												
+							->join('materials','materials.id','=','garments.material_id')
+							->select('types_garments.description as tg_description','garments.gender','sizes.description as s_description','colors.name as c_name','materials.name as m_name','order_details.quantity')				
+							->where('order_details.order_id',$id)->get();
+				$data['customer'] = DB::table('customers')
+											->where('customers.id',$data['order']->customer_id)->first();
+				$data['process'] = DB::table('processes')
+							->where('processes.order_id',$id)
+							->where('processes.state','>',0)
+							->first();	
+				return $this->view('order_p_edit',$data);		
+							
+				
 			}else{
 				return \crocodicstudio\crudbooster\controllers\CBController::getEdit($id);
 			}
-		
+
+
 		}	
 
 
@@ -462,6 +607,12 @@
 				if ($column_value==2){
 					$column_value="En proceso";
 				}
+				if ($column_value==3){
+					$column_value="Proceso finalizado";
+				}
+				if ($column_value==4){
+					$column_value="Pedido finalizado";
+				}
 			}			
 
 	    }
@@ -519,7 +670,24 @@
 	    */
 	    public function hook_after_edit($id) {
 	        //Your code here 
+			/*
+			$batch = DB::table('order_details')
+							->where('order_details.order_id', $id)
+							->sum('order_details.quantity');
 
+			DB::table('processes')
+			->where('processes.order_id', $id)
+			->where('processes.state','>', 0)
+			->update([
+				'batch' => $batch
+				]);
+			
+			DB::table('processes')
+			->where('processes.order_id', $id)
+			->where('processes.state','>', 0)
+			->update([
+				'advance' => DB::raw('ROUND(((((cutting_batch / batch)*100)/4) + (((enabled_batch / batch)*100)/4) + (((confection_batch / batch)*100)/4) + (((finishing_batch / batch)*100)/4)),2)')
+				]);		*/		
 	    }
 
 	    /* 
@@ -531,7 +699,23 @@
 	    */
 	    public function hook_before_delete($id) {
 	        //Your code here
-
+			$data['order'] = DB::table('orders')
+			->where('orders.id',$id)->first();
+			if ($data['order']->state == 2) {
+				CRUDBooster::redirectBack(
+					'Los pedidos en estado <b>en proceso</b>, no se pueden <b>anular</b>.'
+				);
+			}
+			if ($data['order']->state == 3) {
+				CRUDBooster::redirectBack(
+					'Los pedidos en estado <b>proceso finalizado</b>, no se pueden <b>anular</b>.'
+				);
+			}
+			if ($data['order']->state == 4) {
+				CRUDBooster::redirectBack(
+					'Los pedidos en estado <b>pedido finalizado</b>, no se pueden <b>anular</b>.'
+				);
+			}			
 	    }
 
 	    /* 
@@ -543,7 +727,12 @@
 	    */
 	    public function hook_after_delete($id) {
 	        //Your code here
-
+	
+			//Al Anular un peido se actualiza el estado  a 0 "Anulado"
+			
+			DB::table('orders')
+			->where('id', $id)
+			->update(['state' => 0]);
 	    }
 
 
@@ -559,5 +748,21 @@
 			dd($date_formatted);
 			return $date_formatted;
 		}
+
+	
+		public function editOrderP(Request $request){
+
+			DB::table('orders')
+				->where('orders.id', $request->order_id)
+				->update([
+					'delivery_date' => date("Y-m-d",strtotime($request->delivery_date)),
+					'advance_payment' => $request->advance_payment,
+					'pending_payment' => $request->pending_payment,
+					'state' => $request->state
+					]);
+
+			//return back();
+			return redirect('/admin/orders');
+		}	
 
 	}

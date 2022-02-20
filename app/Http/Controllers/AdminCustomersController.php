@@ -340,7 +340,9 @@
 	    */
 	    public function hook_after_delete($id) {
 	        //Your code here
-
+			DB::table('customers')
+			->where('id', $id)
+			->update(['state' => 0]);
 	    }
 
 

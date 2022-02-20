@@ -1,12 +1,9 @@
 @extends('crudbooster::admin_template')
 @section('content')
 
-<form method="POST" action="{{CRUDBooster::mainpath('edit-save/'.$row->id)}}" id="formulario">
+<form method="POST" action="{{CRUDBooster::mainpath('edit-p-save/'.$order->id)}}" id="formulario">
     <input type="hidden" name="_token" value="{{csrf_token()}}">
-    <input type="hidden" name="finalizar" id="finalizar" value="0">
-    <input type="hidden" name="editar" id="editar" value="{{$editar}}">
-    <input type="hidden" name="q_tasks" id="q_tasks" value="{{$q_tasks}}">
-
+    <input type="hidden" name="enproceso" id="enproceso" value="1">
     <div class="panel panel-default">
         <div class="panel-heading">
             <strong>I. Datos principales del pedido</strong> 
@@ -19,31 +16,14 @@
                             <label>Pedido</label>
                         </div>
                         <div class="col-sm-6">
-                            <input type="text" readonly name="order_name" class="form-control" value="Pedido {{$row->order_id}}"> 
-                            <input type="hidden" name="order_id" id="order_id" value="{{$row->order_id}}">
-                            <input type="hidden" name="state" id="state" value="{{$row->state}}">
+                            <input type="text" readonly name="order_name" class="form-control" value="Pedido {{$order->id}}"> 
+                            <input type="hidden" name="order_id" id="order_id" value="{{$order->id}}">
+                            <input type="hidden" name="state" id="state" value="{{$order->state}}">
+                            <input type="hidden" name="type" id="type" value="{{$order->type}}">
                         </div>
                     </div>                        
                 </div>
-                <div class="col-sm-4">
-                    <div class="form-group">
-                        <div class="col-sm-2">
-                            <label>Inicio</label>
-                        </div>
-                        <div class="col-sm-8">
-                            <div class="input-group">
-                                <span class="input-group-addon open-datetimepicker">
-                                    <a>
-                                        <i class="fa fa-calendar">
-                                        </i>
-                                    </a>
-                                </span>
-                                <input type="text" readonly required class="form-control notfocus input_date" name="start_date" id="start_date" >
-                                <input type="hidden" id="start_date_o" value="{{$row->start_date}}">
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
             <p></p>
             <div class="row">
@@ -54,28 +34,11 @@
                         </div>
                         <div class="col-sm-10">
                             <input type="text" readonly name="customer_name" class="form-control" id="customer_name" value="{{$customer->name}} {{$customer->last_name}} {{$customer->second_last_name}}"> 
+                            <input type="hidden" name="customer_id" id="customer_id" value="{{$order->customer_id}}">
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-4">
-                    <div class="form-group">
-                        <div class="col-sm-2">
-                            <label>Límite</label>
-                        </div>
-                        <div class="col-sm-8">
-                            <div class="input-group">
-                                <span class="input-group-addon open-datetimepicker">
-                                    <a>
-                                        <i class="fa fa-calendar">
-                                        </i>
-                                    </a>
-                                </span>
-                                <input type="text" readonly required class="form-control notfocus input_date" name="deadline" id="deadline" >
-                                <input type="hidden" id="deadline_o" value="{{$row->deadline}}">
-                            </div>
-                        </div>
-                    </div>
-                </div>                
+                              
             </div>
             <p></p>
             <div class="row">
@@ -157,7 +120,7 @@
         </div>
         <div class="panel-body">
             <div class="row">
-                <div class="col-sm-6">
+                <div class="col-sm-4">
                     <div class="form-group">
                         <div class="col-sm-4">
                             <label class="control-label">Fecha del pedido</label>
@@ -169,14 +132,39 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6">
+
+                <div class="col-sm-4">
                     <div class="form-group">
                         <div class="col-sm-4">
-                            <label>Fecha de entrega</label>
+                            <label class="control-label">Fecha límite del proceso productivo</label>
                         </div>
                         <div class="col-sm-6">
-                            <input type="text" readonly required name="delivery_date" id="delivery_date" class="form-control" value="{{date('d-m-Y', strtotime($order->delivery_date))}}"> 
-                            <input type="hidden" id="delivery_date_o" value="{{$order->delivery_date}}">
+                            <input type="text" readonly required name="deadline" id="deadline" class="form-control" value="{{date('d-m-Y', strtotime($process->deadline))}}"> 
+                            <input type="hidden" id="deadline_o" value="{{$process->deadline}}">
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <div class="col-sm-4">
+                            <label>Fecha de entrega (*)</label>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="input-group">
+                                <span class="input-group-addon open-datetimepicker">
+                                    <a>
+                                        <i class="fa fa-calendar">
+                                        </i>
+                                    </a>
+                                </span>
+                                <input type="text" readonly required class="form-control notfocus input_date" name="delivery_date" id="delivery_date" value="{{date('d-m-Y', strtotime($order->delivery_date))}}" >
+                                <input type="hidden" id="delivery_date_o" value="{{$order->delivery_date}}">
+
+
+                            </div>
+
                         </div>
                     </div>                    
                 </div>
@@ -212,86 +200,94 @@
                     </tr>
                 </table>
             </div>
-            <div class="form-group">
-                <input type="hidden" name="batch" id="batch" value="{{$total_prendas}}">
-            </div>          
+
+            <p>(*) La fecha de entrega no puede ser menor a la fecha límite de entrega registrado en el proceso productivo</p>     
         </div>
     </div>    
+
     <div class="panel panel-default">
         <div class="panel-heading">
-            <strong>III. Avance productivo</strong>
+            <strong>III. Pago del pedido</strong>
         </div>
         <div class="panel-body">
-            <div class="col-sm-12">
-                <table width="100%" border="1" style="border: 1px solid #c1bdbd;">
-                    <tr>
-                        <th class="cen gris">Fases</th>
-                        <th class="cen gris">Prendas</th>
-                        <th class="cen gris">Total de prendas</th>
-                        <th class="cen gris">% de avance</th>
-                    </tr>
-                    <tr>
-                        <th>1. Fase de corte</th>
-                        <td class="cen">
-                            <input id="can0" name="cutting_batch" type="text" class="an70 cen" value="{{$row->cutting_batch}}">
-                            <input id="acan0" type="hidden" value="{{$row->cutting_batch}}">
-                        </td>
-                        <td class="cen"><label class="margen0" id="tcan0" value="{{$total_prendas}}">{{$total_prendas}}</label></td>
-                        <td class="cen"><label class="margen0"id="pcan0">{{round((($row->cutting_batch / $total_prendas)*100)/4,2)}} %</label></td>
-                    </tr>
-                    <tr>
-                        <th>2. Fase de habilitado</th>
-                        <td class="cen">
-                            <input id="can1" name="enabled_batch" type="text" class="an70 cen" value="{{$row->enabled_batch}}">                            
-                            <input id="acan1" type="hidden" value="{{$row->enabled_batch}}">
-                        </td>
-                        <td class="cen"><label class="margen0" id="tcan1" value="{{$total_prendas}}">{{$total_prendas}}</label></td>
-                        <td class="cen"><label class="margen0" id="pcan1">{{round((($row->enabled_batch / $total_prendas)*100)/4,2)}} %</label></td>                    
-                    </tr>
-                    <tr>
-                        <th>3. Fase de confección</th>     
-                        <td class="cen">
-                            <input id="can2" name="confection_batch" type="text" class="an70 cen" value="{{$row->confection_batch}}">   
-                            <input id="acan2" type="hidden" value="{{$row->confection_batch}}">                                                        
-                        </td>
-                        <td class="cen"><label class="margen0" id="tcan2" value="{{$total_prendas}}">{{$total_prendas}}</label></td>
-                        <td class="cen"><label class="margen0" id="pcan2">{{round((($row->confection_batch / $total_prendas)*100)/4,2)}} %</label></td>               
-                    </tr>
-                    <tr>
-                        <th>4. Fase de acabado</th>
-                        <td class="cen">
-                            <input id="can3" name="finishing_batch" type="textarea" class="an70 cen" value="{{$row->finishing_batch}}">                               
-                            <input id="acan3" type="hidden" value="{{$row->finishing_batch}}">    
-                        </td>
-                        <td class="cen"><label class="margen0" id="tcan3" value="{{$total_prendas}}">{{$total_prendas}}</label></td>
-                        <td class="cen"><label class="margen0" id="pcan3">{{round((($row->finishing_batch / $total_prendas)*100)/4,2)}} %</label></td>                    
-                    </tr>
-                    <tr class="gris">
-                        <th class="cen" colspan="3">% Total de avance productivo</th>
-                        <td class="cen">
-                            <label name="t_advance" class="margen0 negrita" id="t_advance">{{$row->advance}} %</label>
-                            <input type="hidden" name="advance" id="advance" value="{{$row->advance}}">
-                        </td>
-                    </tr>
-                </table>
+            <div id="pago-pedido">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <label class="control-label">Sub total S/ </label>
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="text" readonly name="subtotal" class="form-control" id="subtotal" value="{{$order->subtotal}}"> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p></p>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <label class="control-label">Impuesto S/ </label>
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="text" readonly name="tax" class="form-control" id="tax" value="{{$order->tax}}"> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p></p>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <label class="control-label">Total S/ </label>
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="text" readonly name="total" class="form-control" id="total" value="{{$order->total}}"> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p></p>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <label class="control-label">Pago S/ </label>
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="text" name="advance_payment" class="form-control" id="advance_payment" value="{{$order->advance_payment}}"> 
+                                <input type="hidden" name="a_advance_payment" class="form-control" id="a_advance_payment" value="{{$order->advance_payment}}"> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p></p>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <label class="control-label">Pago restante S/ </label>
+                            </div>
+                            <div class="col-sm-4">
+                                <input type="text" readonly name="pending_payment" class="form-control" id="pending_payment" value="{{$order->pending_payment}}"> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
 
             </div>
-        </div>
-    </div>   
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <strong>IV. Comentarios</strong>
-        </div>
-        <div class="panel-body">
-            <div class="form-group">
-                <textarea rows="2" cols="50" name="notes" id="notes" style="width:100%;">{{$row->notes}}</textarea>
-            </div>
+      
         </div>
     </div>  
+    
     <div class="panel panel-default">
         <div class="panel-footer">
             <input type="button" class="btn btn-primary" value="Grabar" id="grabar">
-            <input type="button" class="btn btn-success" id="grabarfinalizar" value="Grabar y Finalizar proceso">
+            <input type="button" class="btn btn-success" id="grabarfinalizar" value="Grabar y Finalizar pedido">
         </div>
     </div>             
 </form>

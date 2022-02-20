@@ -1,12 +1,7 @@
 @extends('crudbooster::admin_template')
 @section('content')
 
-<form method="POST" action="{{CRUDBooster::mainpath('edit-save/'.$row->id)}}" id="formulario">
-    <input type="hidden" name="_token" value="{{csrf_token()}}">
-    <input type="hidden" name="finalizar" id="finalizar" value="0">
-    <input type="hidden" name="editar" id="editar" value="{{$editar}}">
-    <input type="hidden" name="q_tasks" id="q_tasks" value="{{$q_tasks}}">
-
+<input type="hidden" name="editar" id="editar" value="{{$editar}}">
     <div class="panel panel-default">
         <div class="panel-heading">
             <strong>I. Datos principales del pedido</strong> 
@@ -21,7 +16,7 @@
                         <div class="col-sm-6">
                             <input type="text" readonly name="order_name" class="form-control" value="Pedido {{$row->order_id}}"> 
                             <input type="hidden" name="order_id" id="order_id" value="{{$row->order_id}}">
-                            <input type="hidden" name="state" id="state" value="{{$row->state}}">
+                            <input type="hidden" name="process_id" id="process_id" value="{{$row->id}}">
                         </div>
                     </div>                        
                 </div>
@@ -38,7 +33,8 @@
                                         </i>
                                     </a>
                                 </span>
-                                <input type="text" readonly required class="form-control notfocus input_date" name="start_date" id="start_date" >
+                                
+                                <input type="text" readonly required name="start_date_d" id="start_date_d" class="form-control" value="{{date('d-m-Y', strtotime($row->start_date))}}"> 
                                 <input type="hidden" id="start_date_o" value="{{$row->start_date}}">
                             </div>
                         </div>
@@ -70,7 +66,7 @@
                                         </i>
                                     </a>
                                 </span>
-                                <input type="text" readonly required class="form-control notfocus input_date" name="deadline" id="deadline" >
+                                <input type="text" readonly required name="deadline_d" id="deadline_d" class="form-control" value="{{date('d-m-Y', strtotime($row->deadline))}}"> 
                                 <input type="hidden" id="deadline_o" value="{{$row->deadline}}">
                             </div>
                         </div>
@@ -210,89 +206,134 @@
                         <th class="cen" colspan="5">Total de prendas</th>
                         <th class='cen'>{{$total_prendas}}</td>
                     </tr>
-                </table>
-            </div>
-            <div class="form-group">
-                <input type="hidden" name="batch" id="batch" value="{{$total_prendas}}">
-            </div>          
-        </div>
-    </div>    
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <strong>III. Avance productivo</strong>
-        </div>
-        <div class="panel-body">
-            <div class="col-sm-12">
-                <table width="100%" border="1" style="border: 1px solid #c1bdbd;">
-                    <tr>
-                        <th class="cen gris">Fases</th>
-                        <th class="cen gris">Prendas</th>
-                        <th class="cen gris">Total de prendas</th>
-                        <th class="cen gris">% de avance</th>
-                    </tr>
-                    <tr>
-                        <th>1. Fase de corte</th>
-                        <td class="cen">
-                            <input id="can0" name="cutting_batch" type="text" class="an70 cen" value="{{$row->cutting_batch}}">
-                            <input id="acan0" type="hidden" value="{{$row->cutting_batch}}">
-                        </td>
-                        <td class="cen"><label class="margen0" id="tcan0" value="{{$total_prendas}}">{{$total_prendas}}</label></td>
-                        <td class="cen"><label class="margen0"id="pcan0">{{round((($row->cutting_batch / $total_prendas)*100)/4,2)}} %</label></td>
-                    </tr>
-                    <tr>
-                        <th>2. Fase de habilitado</th>
-                        <td class="cen">
-                            <input id="can1" name="enabled_batch" type="text" class="an70 cen" value="{{$row->enabled_batch}}">                            
-                            <input id="acan1" type="hidden" value="{{$row->enabled_batch}}">
-                        </td>
-                        <td class="cen"><label class="margen0" id="tcan1" value="{{$total_prendas}}">{{$total_prendas}}</label></td>
-                        <td class="cen"><label class="margen0" id="pcan1">{{round((($row->enabled_batch / $total_prendas)*100)/4,2)}} %</label></td>                    
-                    </tr>
-                    <tr>
-                        <th>3. Fase de confección</th>     
-                        <td class="cen">
-                            <input id="can2" name="confection_batch" type="text" class="an70 cen" value="{{$row->confection_batch}}">   
-                            <input id="acan2" type="hidden" value="{{$row->confection_batch}}">                                                        
-                        </td>
-                        <td class="cen"><label class="margen0" id="tcan2" value="{{$total_prendas}}">{{$total_prendas}}</label></td>
-                        <td class="cen"><label class="margen0" id="pcan2">{{round((($row->confection_batch / $total_prendas)*100)/4,2)}} %</label></td>               
-                    </tr>
-                    <tr>
-                        <th>4. Fase de acabado</th>
-                        <td class="cen">
-                            <input id="can3" name="finishing_batch" type="textarea" class="an70 cen" value="{{$row->finishing_batch}}">                               
-                            <input id="acan3" type="hidden" value="{{$row->finishing_batch}}">    
-                        </td>
-                        <td class="cen"><label class="margen0" id="tcan3" value="{{$total_prendas}}">{{$total_prendas}}</label></td>
-                        <td class="cen"><label class="margen0" id="pcan3">{{round((($row->finishing_batch / $total_prendas)*100)/4,2)}} %</label></td>                    
-                    </tr>
                     <tr class="gris">
-                        <th class="cen" colspan="3">% Total de avance productivo</th>
+                        <th class="cen" colspan="5">% Total de avance productivo</th>
                         <td class="cen">
                             <label name="t_advance" class="margen0 negrita" id="t_advance">{{$row->advance}} %</label>
                             <input type="hidden" name="advance" id="advance" value="{{$row->advance}}">
                         </td>
                     </tr>
                 </table>
-
             </div>
         </div>
-    </div>   
-    <div class="panel panel-default">
+    </div>    
+    <div id='panel-form-detalledelprocesoi' class="panel panel-default">
         <div class="panel-heading">
-            <strong>IV. Comentarios</strong>
+            <strong>III. Insumos</strong>
         </div>
         <div class="panel-body">
-            <div class="form-group">
-                <textarea rows="2" cols="50" name="notes" id="notes" style="width:100%;">{{$row->notes}}</textarea>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class='fa fa-table'></i> Insumos asignados
+                </div>
+                <div class="panel-body no-padding table-responsive" style="max-height: 400px;overflow: auto;">
+                    <table id='table-detalledelprocesoi' class='table table-striped table-bordered'>
+                        <thead>
+                            <tr>
+                                <th>Insumo</th>
+                                <th>Stock</th>
+                                <th>Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (count($supplies)>0)
+                                @foreach ($supplies as $s)
+                                    <tr>
+                                        <td class='supply_id'>
+                                            <span class='td-label'> {{$s->supply}} </span>
+                                            <input type='hidden' name='detalledelproceso-supply_id[]' value=' {{$s->supply_id}}'/>
+                                            <input type='hidden' class="detail_id" name='detalledelproceso-supply_detail_id[]' value='{{$s->id}}'/>
+                                        </td>
+                                        <td class='stock'> {{$s->stock}}
+                                            <input type='hidden' name='detalledelproceso-stock[]' value='{{$s->stock}}'/>
+                                        </td>
+                                        <td class='quantity'> {{$s->quantity}} 
+                                            <input type='hidden' name='detalledelproceso-quantity[]' value='{{$s->quantity}}'/>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr class="trNull">
+                                    <td colspan="6" align="center">No tenemos datos disponibles</td>
+                                </tr>                                    
+                      
+                            @endif
+
+
+
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>  
+    </div>       
+   
+    <div id='panel-form-detalledelprocesot' class="panel panel-default">
+        <div class="panel-heading">
+            <strong>IV. Tareas</strong>
+        </div>
+        <div class="panel-body">
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class='fa fa-table'></i> Tareas registradas
+                </div>
+                <div class="panel-body no-padding table-responsive" style="max-height: 400px;overflow: auto;">
+                    <table id='table-detalledelprocesot' class='table table-striped table-bordered'>
+                        <thead>
+                            <tr>
+                                <th>Tarea</th>
+                                <th>Responsable</th>
+                                <th>Descripción</th>
+                                <th>Terminada</th>
+                                <th>Fecha de término</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (count($tasks)>0)
+                                @foreach ($tasks as $t)
+                                <tr>
+                                        <td class='title'> {{$t->title}}
+                                            <input type='hidden' name='detalledelproceso-title[]' value='{{$t->title}}'/>
+                                        </td>
+                                        <td class='user_id'>
+                                            <span class='td-label'> {{$t->responsable}} </span>
+                                            <input type='hidden' name='detalledelproceso-user_id[]' value=' {{$t->user_id}}'/>
+                                            <input type='hidden' class="task_detail_id" name='detalledelproceso-task_detail_id[]' value='{{$t->id}}'/>
+                                        </td>
+                                        <td class='description'> {{$t->description}} 
+                                            <input type='hidden' name='detalledelproceso-description[]' value='{{$t->description}}'/>
+                                        </td>
+                                        <td class='finished'>
+                                            @if ($t->finished == 1)
+                                                Si
+                                            @else
+                                                No
+                                            @endif
+                                            <input type='hidden' class='checkval' name='detalledelproceso-finished[]' value='{{$t->finished}}'/>
+                                        </td>
+                                        <td class='finish_date'> {{$t->finish_date}} 
+                                            <input type='hidden' name='detalledelproceso-finish_date[]' value='{{$t->finish_date}}'/>
+                                        </td>                                        
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr class="trNullt">
+                                    <td colspan="6" align="center">No tenemos datos disponibles</td>
+                                </tr>                                    
+                    
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>    
+
     <div class="panel panel-default">
         <div class="panel-footer">
-            <input type="button" class="btn btn-primary" value="Grabar" id="grabar">
-            <input type="button" class="btn btn-success" id="grabarfinalizar" value="Grabar y Finalizar proceso">
+            
+            <a href="{{ url('/admin/resources') }}" class="btn btn-primary" >Regresar</a>
         </div>
     </div>             
-</form>
 @endsection

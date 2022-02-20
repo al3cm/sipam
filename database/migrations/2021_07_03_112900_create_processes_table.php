@@ -25,7 +25,7 @@ class CreateProcessesTable extends Migration
             $table->integer('finishing_batch')->default(0);
             $table->double('advance',8,2)->default(0);
             $table->string('notes',500);
-            $table->tinyInteger('state')->default(1);//1: En proceso 0: Finalizado
+            $table->tinyInteger('state')->default(1);//0:Inactivo/Anulado 1: En proceso 2: Finalizado 
             $table->bigInteger('order_id');
             $table->timestamps();
             $table->softDeletes();

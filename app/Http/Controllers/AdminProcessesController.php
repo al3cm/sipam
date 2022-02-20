@@ -53,6 +53,7 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 			$this->form[] = ['label'=>'Lote para acabado','name'=>'finishing_batch','type'=>'text','validation'=>'integer|min:0','width'=>'col-sm-2'];
 			$this->form[] = ['label'=>'% de avance','name'=>'advance','type'=>'double','width'=>'col-sm-2'];
 			$this->form[] = ['label'=>'Anotaciones','name'=>'notes','type'=>'textarea','validation'=>'min:1|max:500','width'=>'col-sm-5'];
+			$this->form[] = ['label'=>'Estado','name'=>'state','type'=>'integer'];
 			# END FORM DO NOT REMOVE THIS LINE
 
 			# OLD START FORM
@@ -176,6 +177,7 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 				$(document).ready(function() { 
 					editar = $('#editar').val();
 					console.log('Editar: ' + editar);
+					console.log('Cantidad de tareas sin terminar: ' + $('#q_tasks').val());
 					if(editar == 0){
 						limpiar();
 					}else{
@@ -213,22 +215,41 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 						$('#start_date').datepicker('setDate', fecha_inicio);
 						$('#deadline').datepicker('setDate', fecha_fin);
 
-
-
-
-
-
+						calculaPorcentajes();
 					}
 				});
 
 				$('#grabar').click(function(){
-					console.log(\"Porcentaje calculado: \"+$('#advance').val());
 					$('#formulario').submit();
 				});
 				
-				$('#finalizar').click(function(){
-					$('#finalizar').val('1');
-					$('#formulario').submit();
+				$('#grabarfinalizar').click(function(){
+					if(parseFloat($('#advance').val())<100){
+						sweetAlert(\"¡Upss!\", \"No se puede finalizar el proceso productivo hasta encontrarse al 100%\",\"warning\");
+						return false;
+					}
+					if(parseFloat($('#q_tasks').val())>0){
+						sweetAlert(\"¡Upss!\", \"No se puede finalizar el proceso productivo hasta terminar todas las tareas asignadas\",\"warning\");
+						return false;
+					}
+
+					swal({
+						title: \"¿Estás seguro de finalizar el proceso productivo?\",
+						text: \"Una vez finalizado, no se podrá editar\",
+						type: 'warning',
+						showCancelButton: true,
+						confirmButtonText: 'Si',
+						cancelButtonText: 'No',
+						reverseButtons: true
+					}, function (Finish){
+						if (Finish){
+							$('#state').val('2');
+							$('#formulario').submit();
+						}else{
+							return false;
+						}
+					});
+
 				});
 
 				function limpiar(){
@@ -342,69 +363,53 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 				});
 
 				$('#can0').blur(function(e){
-					$('#tcan0').val($('#tcan0').text());
-					$('#tcan1').val($('#tcan1').text());
-					$('#tcan2').val($('#tcan2').text());
-					$('#tcan3').val($('#tcan3').text());
-					
-					if($('#can0').val()>$('#tcan0').val()){
-						alert('Valor no puede ser mayor a la cantidad de bienes');
-						$('#can0').val(0);
+					if(parseInt($('#can0').val())>parseInt($('#tcan0').val())){
+						sweetAlert(\"¡Upss!\", \"El valor no puede ser mayor a la cantidad de bienes\", \"warning\");
+						$('#can0').val($('#acan0').val());
 						calculaPorcentajes();
 						$('#can0').focus();
 						return false;
 					}else{
+						$('#acan0').val($('#can0').val());
 						return true;
 					}
 				});
 
 				$('#can1').blur(function(e){
-					$('#tcan0').val($('#tcan0').text());
-					$('#tcan1').val($('#tcan1').text());
-					$('#tcan2').val($('#tcan2').text());
-					$('#tcan3').val($('#tcan3').text());
-
-					if($('#can1').val()>$('#tcan1').val()){
-						alert('Valor no puede ser mayor a la cantidad de bienes');
-						$('#can1').val(0);
+					if(parseInt($('#can1').val())>parseInt($('#tcan1').val())){
+						sweetAlert(\"¡Upss!\", \"El valor no puede ser mayor a la cantidad de bienes\", \"warning\");
+						$('#can1').val($('#acan1').val());
 						calculaPorcentajes();
 						$('#can1').focus();
 						return false;
 					}else{
+						$('#acan1').val($('#can1').val());
 						return true;
 					}
 				});
 
 				$('#can2').blur(function(e){
-					$('#tcan0').val($('#tcan0').text());
-					$('#tcan1').val($('#tcan1').text());
-					$('#tcan2').val($('#tcan2').text());
-					$('#tcan3').val($('#tcan3').text());
-
-					if($('#can2').val()>$('#tcan2').val()){
-						alert('Valor no puede ser mayor a la cantidad de bienes');
-						$('#can2').val(0);
+					if(parseInt($('#can2').val())>parseInt($('#tcan2').val())){
+						sweetAlert(\"¡Upss!\", \"El valor no puede ser mayor a la cantidad de bienes\", \"warning\");
+						$('#can2').val($('#acan2').val());
 						calculaPorcentajes();
 						$('#can2').focus();
 						return false;
 					}else{
+						$('#acan2').val($('#can2').val());
 						return true;
 					}
 				});
 
 				$('#can3').blur(function(e){
-					$('#tcan0').val($('#tcan0').text());
-					$('#tcan1').val($('#tcan1').text());
-					$('#tcan2').val($('#tcan2').text());
-					$('#tcan3').val($('#tcan3').text());
-
-					if($('#can3').val()>$('#tcan3').val()){
-						alert('Valor no puede ser mayor a la cantidad de bienes');
-						$('#can3').val(0);
+					if(parseInt($('#can3').val())>parseInt($('#tcan3').val())){
+						sweetAlert(\"¡Upss!\", \"El valor no puede ser mayor a la cantidad de bienes\", \"warning\");
+						$('#can3').val($('#acan3').val());
 						calculaPorcentajes();
 						$('#can3').focus();
 						return false;
 					}else{
+						$('#acan3').val($('#can3').val());
 						return true;
 					}
 				});
@@ -645,9 +650,9 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 
 					porcentaje = parseFloat($('#pcan0').val()) + parseFloat($('#pcan1').val()) + parseFloat($('#pcan2').val()) + parseFloat($('#pcan3').val());
 
-					$('#t_advance').text(porcentaje + ' %');
-					$('#t_advance').val(porcentaje);
-					$('#advance').val(parseFloat(porcentaje));
+					$('#t_advance').text(roundToTwo(porcentaje) + ' %');
+					$('#t_advance').val(roundToTwo(porcentaje));
+					$('#advance').val(parseFloat(roundToTwo(porcentaje)));
 					console.log(\"Porcentaje calculado: \"+$('#advance').val());
 				}
 
@@ -754,6 +759,7 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 								  ->whereColumn('processes.order_id', 'orders.id')
 								  ->where('processes.state','>', 0);
 						})
+						->where('orders.type','=', 2)
 						->get();
 			//$this->cbView('process_add',$data);
 			return $this->view('process_add',$data);
@@ -789,7 +795,12 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 							->where('order_details.order_id',$data['row']->order_id)->get();
 
 				$data['customer'] = DB::table('customers')
-							->where('customers.id',$data['order']->customer_id)->first();						
+							->where('customers.id',$data['order']->customer_id)->first();	
+				//dd($id);		
+				$data['q_tasks'] = DB::table('tasks')
+							->where('tasks.process_id','=',$id)
+							->where('tasks.check','=',0)
+							->count();
 					
 				return $this->view('process_edit',$data);	
 			}
@@ -879,10 +890,11 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 			if($column_index == 5){
 				$column_value = number_format($column_value, 2) . ' %';
 			}
+
 			// Formateando el estado
 			if($column_index == 7){
 				if ($column_value==1){
-					$column_value="Editable";
+					$column_value="En proceso";
 				}
 				if ($column_value==2){
 					$column_value="Finalizado";
@@ -922,7 +934,7 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 			->where('id','=',$id)->get();
 			/*
 			Cambiar a estado 2 "En proceso" del pedido, al registrar un avance productivo
-			Estado 2 "En proceso", no permite editar el pedido
+			Estado 2 "En proceso", solo permite editar la fecha de entrega y pago del pedido
 			*/
 			DB::table('orders')
 			->where('id', $process[0]->order_id)
@@ -941,16 +953,18 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 	    */
 	    public function hook_before_edit(&$postdata,$id) {        
 	        //Your code here
-			//dd($postdata['advance'] );
+			//dd($postdata);
 			$postdata['start_date'] = date("Y-m-d",strtotime($postdata['start_date']));
 			$postdata['deadline'] = date("Y-m-d",strtotime($postdata['deadline']));
-			if($postdata['finalizar']==1){//verificando valor auxiliar si el proceso fue finalizado
+			//dd($postdata['finalizar']);
+			if($postdata['state']==2){//verificando valor auxiliar si el proceso fue finalizado
 				$fecha_fin = Carbon::now();
 				//dd($fecha_fin);
 				//$postdata['finish_date'] = date("Y-m-d",$fecha_fin->toDateTimeString());
 				$postdata['finish_date'] = $fecha_fin->format("Y-m-d");
 				//dd($postdata['finish_date'] );
-				$postdata['state'] = 2;
+				//$postdata['state'] = 2;
+				
 			}
 
 
@@ -966,7 +980,18 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 	    */
 	    public function hook_after_edit($id) {
 	        //Your code here 
-
+			$process = DB::table('processes')
+			->where('id','=',$id)->get();
+			/*
+			Cambiar a estado 3 "Proceso finalizado" del pedido, al finalizar un avance productivo
+			Estado 3 "Proceso finalizado", solo permite editar la fecha de entrega y pago del pedido
+			*/
+			if($process[0]->state == 2){
+				DB::table('orders')
+					->where('id', $process[0]->order_id)
+					->update(['state' => 3]);
+			}
+			
 	    }
 
 	    /* 
