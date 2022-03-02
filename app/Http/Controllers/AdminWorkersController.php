@@ -5,57 +5,83 @@
 	use DB;
 	use CRUDBooster;
 
-	class AdminGarmentsController extends \crocodicstudio\crudbooster\controllers\CBController {
+	class AdminWorkersController extends \crocodicstudio\crudbooster\controllers\CBController {
 
 	    public function cbInit() {
 
 			# START CONFIGURATION DO NOT REMOVE THIS LINE
-			$this->title_field = "id";
+			$this->title_field = "name";
 			$this->limit = "20";
 			$this->orderby = "id,desc";
 			$this->global_privilege = false;
 			$this->button_table_action = true;
 			$this->button_bulk_action = false;
 			$this->button_action_style = "button_icon";
-			$this->button_add = true;
-			$this->button_edit = true;
-			$this->button_delete = true;
+			$this->button_add = false;
+			$this->button_edit = false;
+			$this->button_delete = false;
 			$this->button_detail = true;
 			$this->button_show = true;
 			$this->button_filter = true;
 			$this->button_import = false;
 			$this->button_export = true;
-			$this->table = "garments";
+			$this->table = "cms_users";
 			# END CONFIGURATION DO NOT REMOVE THIS LINE
 
 			# START COLUMNS DO NOT REMOVE THIS LINE
 			$this->col = [];
-			$this->col[] = ["label"=>"Prenda","name"=>"type_garment_id","join"=>"types_garments,description"];
-			$this->col[] = ["label"=>"Género","name"=>"gender"];
-			$this->col[] = ["label"=>"Talla","name"=>"size_id","join"=>"sizes,description"];
-			$this->col[] = ["label"=>"Color","name"=>"color_id","join"=>"colors,name"];
-			$this->col[] = ["label"=>"Material","name"=>"material_id","join"=>"materials,name"];
-			$this->col[] = ["label"=>"Precio","name"=>"price"];
+			$this->col[] = ["label"=>"Tipo doc.","name"=>"cms_users.id_type","callback"=>function($row) {
+					if ($row->id_type == 1)
+						return "DNI";
+					elseif ($row->id_type == 2)
+						return "CE";
+				}];
+			//$this->col[] = ["label"=>"Tipo doc.","name"=>"(if(cms_users.id_type = 1,'DNI',if(cms_users.id_type = 2,'CE',''))) as tipo_doc "];
+			$this->col[] = ["label"=>"Doc. Id.","name"=>"id_number"];
+			$this->col[] = ["label"=>"Nombre","name"=>"name"];
+			$this->col[] = ["label"=>"Cargo","name"=>"cms_privileges.name"/*,"join"=>"cms_privileges,name"*/];
+			$this->col[] = ["label"=>"Email","name"=>"cms_users.email"];
+			$this->col[] = ["label"=>"Teléfono","name"=>"cms_users.phone"];
+			$this->col[] = ["label"=>"Tareas pendientes","name"=>"(select count(*) from tasks where tasks.user_id=cms_users.id and tasks.check=0) as pendientes"];
+			$this->col[] = ["label"=>"Procesos activos","name"=>"(select count(distinct tasks.process_id) from tasks where tasks.user_id=cms_users.id and tasks.check=0) as procesos"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
 
 			# START FORM DO NOT REMOVE THIS LINE
 			$this->form = [];
-			$this->form[] = ['label'=>'Prenda','name'=>'type_garment_id','type'=>'select2','validation'=>'required','width'=>'col-sm-4','datatable'=>'types_garments,description'];
-			$this->form[] = ['label'=>'Género','name'=>'gender','type'=>'select','validation'=>'required|min:1|max:10','width'=>'col-sm-3','dataenum'=>'Dama;Caballero;Unisex'];
-			$this->form[] = ['label'=>'Talla','name'=>'size_id','type'=>'select2','validation'=>'required','width'=>'col-sm-3','datatable'=>'sizes,description'];
-			$this->form[] = ['label'=>'Color','name'=>'color_id','type'=>'select2','validation'=>'required','width'=>'col-sm-4','datatable'=>'colors,name'];
-			$this->form[] = ['label'=>'Material','name'=>'material_id','type'=>'select2','validation'=>'required','width'=>'col-sm-4','datatable'=>'materials,name'];
-			$this->form[] = ['label'=>'Precio','name'=>'price','type'=>'money','validation'=>'required|min:0','width'=>'col-sm-2'];
+			$this->form[] = ['label'=>'Name','name'=>'name','type'=>'text','validation'=>'required|string|min:3|max:70','width'=>'col-sm-10','placeholder'=>'Puedes introducir solo una letra'];
+			$this->form[] = ['label'=>'Photo','name'=>'photo','type'=>'upload','validation'=>'required|image|max:3000','width'=>'col-sm-10','help'=>'Tipo de imágenes soportados: JPG, JPEG, PNG, GIF, BMP'];
+			$this->form[] = ['label'=>'Email','name'=>'email','type'=>'email','validation'=>'required|min:1|max:255|email|unique:cms_users','width'=>'col-sm-10','placeholder'=>'Introduce una dirección de correo electrónico válida'];
+			$this->form[] = ['label'=>'Password','name'=>'password','type'=>'password','validation'=>'min:3|max:32','width'=>'col-sm-10','help'=>'Mínimo 5 caracteres. Deja este campo vacio si no solicitaste un cambio de contraseña.'];
+			$this->form[] = ['label'=>'Cms Privileges','name'=>'id_cms_privileges','type'=>'select2','validation'=>'required|integer|min:0','width'=>'col-sm-10','datatable'=>'cms_privileges,name'];
+			$this->form[] = ['label'=>'Status','name'=>'status','type'=>'text','validation'=>'required|min:1|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Type','name'=>'id_type','type'=>'select2','validation'=>'required|min:1|max:255','width'=>'col-sm-10','datatable'=>'type,id'];
+			$this->form[] = ['label'=>'Number','name'=>'id_number','type'=>'select2','validation'=>'required|min:1|max:255','width'=>'col-sm-10','datatable'=>'number,id'];
+			$this->form[] = ['label'=>'Dob','name'=>'dob','type'=>'date','validation'=>'required|date','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Nacionality','name'=>'nacionality','type'=>'text','validation'=>'required|min:1|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Gender','name'=>'gender','type'=>'text','validation'=>'required|min:1|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Phone','name'=>'phone','type'=>'number','validation'=>'required|numeric','width'=>'col-sm-10','placeholder'=>'Puedes introducir solo un número'];
+			$this->form[] = ['label'=>'Personal Email','name'=>'personal_email','type'=>'text','validation'=>'required|min:1|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Address','name'=>'address','type'=>'text','validation'=>'required|min:1|max:255','width'=>'col-sm-10'];
+			$this->form[] = ['label'=>'Salary','name'=>'salary','type'=>'money','validation'=>'required|integer|min:0','width'=>'col-sm-10'];
 			# END FORM DO NOT REMOVE THIS LINE
 
 			# OLD START FORM
 			//$this->form = [];
-			//$this->form[] = ['label'=>'Prenda','name'=>'type_garment_id','type'=>'select2','validation'=>'required','width'=>'col-sm-5','datatable'=>'types_garments,description'];
-			//$this->form[] = ['label'=>'Género','name'=>'gender','type'=>'select','validation'=>'required|min:1|max:10','width'=>'col-sm-2','datatable'=>'colors,name'];
-			//$this->form[] = ['label'=>'Talla','name'=>'size_id','type'=>'select2','validation'=>'required','width'=>'col-sm-2','datatable'=>'sizes,description'];
-			//$this->form[] = ['label'=>'Color','name'=>'color_id','type'=>'select2','validation'=>'required','width'=>'col-sm-5','dataenum'=>'Dama;Caballero'];
-			//$this->form[] = ['label'=>'Material','name'=>'material_id','type'=>'select2','validation'=>'required','width'=>'col-sm-6','datatable'=>'materials,name'];
-			//$this->form[] = ['label'=>'Precio','name'=>'price','type'=>'money','validation'=>'required|min:0','width'=>'col-sm-2'];
+			//$this->form[] = ["label"=>"Name","name"=>"name","type"=>"text","required"=>TRUE,"validation"=>"required|string|min:3|max:70","placeholder"=>"Puedes introducir solo una letra"];
+			//$this->form[] = ["label"=>"Photo","name"=>"photo","type"=>"upload","required"=>TRUE,"validation"=>"required|image|max:3000","help"=>"Tipo de imágenes soportados: JPG, JPEG, PNG, GIF, BMP"];
+			//$this->form[] = ["label"=>"Email","name"=>"email","type"=>"email","required"=>TRUE,"validation"=>"required|min:1|max:255|email|unique:cms_users","placeholder"=>"Introduce una dirección de correo electrónico válida"];
+			//$this->form[] = ["label"=>"Password","name"=>"password","type"=>"password","required"=>TRUE,"validation"=>"min:3|max:32","help"=>"Mínimo 5 caracteres. Deja este campo vacio si no solicitaste un cambio de contraseña."];
+			//$this->form[] = ["label"=>"Cms Privileges","name"=>"id_cms_privileges","type"=>"select2","required"=>TRUE,"validation"=>"required|integer|min:0","datatable"=>"cms_privileges,name"];
+			//$this->form[] = ["label"=>"Status","name"=>"status","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Type","name"=>"id_type","type"=>"select2","required"=>TRUE,"validation"=>"required|min:1|max:255","datatable"=>"type,id"];
+			//$this->form[] = ["label"=>"Number","name"=>"id_number","type"=>"select2","required"=>TRUE,"validation"=>"required|min:1|max:255","datatable"=>"number,id"];
+			//$this->form[] = ["label"=>"Dob","name"=>"dob","type"=>"date","required"=>TRUE,"validation"=>"required|date"];
+			//$this->form[] = ["label"=>"Nacionality","name"=>"nacionality","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Gender","name"=>"gender","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Phone","name"=>"phone","type"=>"number","required"=>TRUE,"validation"=>"required|numeric","placeholder"=>"Puedes introducir solo un número"];
+			//$this->form[] = ["label"=>"Personal Email","name"=>"personal_email","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Address","name"=>"address","type"=>"text","required"=>TRUE,"validation"=>"required|min:1|max:255"];
+			//$this->form[] = ["label"=>"Salary","name"=>"salary","type"=>"money","required"=>TRUE,"validation"=>"required|integer|min:0"];
 			# OLD END FORM
 
 			/* 
@@ -243,7 +269,15 @@
 	    */
 	    public function hook_query_index(&$query) {
 	        //Your code here
-	            
+			$query->join('cms_privileges','cms_privileges.id','=','cms_users.id_cms_privileges')
+				  ->where('cms_privileges.is_superadmin',0)
+				  ->where('cms_privileges.id','<>',4)
+			;
+	        /*$query->where('status','Active')
+				  ->where('cms_privileges.is_superadmin',0)
+				  ->where('cms_privileges.id','<>',4)
+				  ->get();*/
+			//dd($query);
 	    }
 
 	    /*
@@ -254,6 +288,30 @@
 	    */    
 	    public function hook_row_index($column_index,&$column_value) {	        
 	    	//Your code here
+			/*if($column_index == 0){
+				if($column_value==1)
+					$column_value = 'DNI';
+				elseif($column_value==2)
+					$column_value = 'CE';
+			}*/
+/*
+			if($column_index == 6){
+				$id = $column_value;
+				$column_value = DB::table('tasks')
+				->where('tasks.user_id','=',$id)
+				->where('tasks.check','=',0)
+				->count();
+			}					
+*/
+		/*	if($column_index == 7){
+				$id = $column_value;
+				$column_value = DB::table('tasks')
+				->where('tasks.user_id','=',$id)
+				->where('tasks.check','=',0)
+				->distinct()
+				->count('tasks.process_id');
+			}		*/
+			
 	    }
 
 	    /*

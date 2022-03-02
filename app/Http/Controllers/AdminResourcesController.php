@@ -16,7 +16,7 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 			$this->orderby = "id,desc";
 			$this->global_privilege = false;
 			$this->button_table_action = true;
-			$this->button_bulk_action = true;
+			$this->button_bulk_action = false;
 			$this->button_action_style = "button_icon";
 			$this->button_add = false;
 			$this->button_edit = true;
@@ -25,7 +25,7 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 			$this->button_show = true;
 			$this->button_filter = true;
 			$this->button_import = false;
-			$this->button_export = false;
+			$this->button_export = true;
 			$this->table = "processes";
 			# END CONFIGURATION DO NOT REMOVE THIS LINE
 
@@ -1031,11 +1031,11 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 	    public function hook_row_index($column_index,&$column_value) {	        
 	    	//Your code here
 						// Formateando pedido
-						if($column_index == 1){
+						if($column_index == 0){
 							$column_value = 'Pedido N° '. str_pad($column_value,4,"0",STR_PAD_LEFT);
 						}			
 						// Actualizando el formato de las fechas
-						if($column_index == 2 || $column_index == 4 || $column_index == 8){
+						if($column_index == 1 || $column_index == 3 || $column_index == 7){
 							if ($column_value<>""){
 								$column_value = date("d/m/Y",strtotime($column_value));
 							}else{
@@ -1044,11 +1044,11 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 			
 						}
 						// Formateando porcentaje
-						if($column_index == 5){
+						if($column_index == 4){
 							$column_value = number_format($column_value, 2) . ' %';
 						}
 						//Formateando insumos
-						if($column_index == 6){
+						if($column_index == 5){
 							$id = $column_value;
 							$insumos = DB::table('supply_details')
 							->where('supply_details.process_id','=',$id)
@@ -1060,7 +1060,7 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 							}
 						}
 						//Formateando tareas pendientes						
-						if($column_index == 7){
+						if($column_index == 6){
 							$id = $column_value;
 							$column_value = DB::table('tasks')
 							->where('tasks.process_id','=',$id)
@@ -1070,7 +1070,7 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 						
 						
 						// Formateando el estado
-						if($column_index == 9){
+						if($column_index == 8){
 							if ($column_value==1){
 								$column_value="En proceso";
 							}

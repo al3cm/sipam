@@ -17,7 +17,7 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 			$this->orderby = "id,desc";
 			$this->global_privilege = false;
 			$this->button_table_action = true;
-			$this->button_bulk_action = true;
+			$this->button_bulk_action = false;
 			$this->button_action_style = "button_icon";
 			$this->button_add = true;
 			$this->button_edit = true;
@@ -874,11 +874,11 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 	    public function hook_row_index($column_index,&$column_value) {	        
 	    	//Your code here
 			// Formateando pedido
-			if($column_index == 1){
+			if($column_index == 0){
 				$column_value = 'Pedido N° '. str_pad($column_value,4,"0",STR_PAD_LEFT);
 			}			
 			// Actualizando el formato de las fechas
-			if($column_index == 2 || $column_index == 4 || $column_index == 6){
+			if($column_index == 1 || $column_index == 3 || $column_index == 5){
 				if ($column_value<>""){
 					$column_value = date("d/m/Y",strtotime($column_value));
 				}else{
@@ -887,12 +887,12 @@ class AdminProcessesController extends \crocodicstudio\crudbooster\controllers\C
 
 			}
 			// Formateando porcentaje
-			if($column_index == 5){
+			if($column_index == 4){
 				$column_value = number_format($column_value, 2) . ' %';
 			}
 
 			// Formateando el estado
-			if($column_index == 7){
+			if($column_index == 6){
 				if ($column_value==1){
 					$column_value="En proceso";
 				}
