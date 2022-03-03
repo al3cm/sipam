@@ -37,8 +37,8 @@
 						return "CE";
 				}];
 			//$this->col[] = ["label"=>"Tipo doc.","name"=>"(if(cms_users.id_type = 1,'DNI',if(cms_users.id_type = 2,'CE',''))) as tipo_doc "];
-			$this->col[] = ["label"=>"Doc. Id.","name"=>"id_number"];
-			$this->col[] = ["label"=>"Nombre","name"=>"name"];
+			$this->col[] = ["label"=>"Doc. Id.","name"=>"cms_users.id_number"];
+			$this->col[] = ["label"=>"Nombre","name"=>"cms_users.name"];
 			$this->col[] = ["label"=>"Cargo","name"=>"cms_privileges.name"/*,"join"=>"cms_privileges,name"*/];
 			$this->col[] = ["label"=>"Email","name"=>"cms_users.email"];
 			$this->col[] = ["label"=>"Teléfono","name"=>"cms_users.phone"];
@@ -387,6 +387,34 @@
 
 	    }
 
+		public function getDetail($id){
+			//dd($id);
+			$data['page_title']  = "Detalle de trabajador";
+
+			$data['row'] = DB::table('cms_users')
+						->where('cms_users.id',$id)->first();
+
+			$data['privilege'] = DB::table('cms_privileges')
+						->where('cms_privileges.id',$data['row']->id_cms_privileges)->first();
+						
+			$data['tasks'] = DB::table('tasks')
+						->join('processes','processes.id','=','tasks.process_id')
+						->join('orders','orders.id','=','processes.order_id')
+						->join('customers','customers.id','=','orders.customer_id')
+						->select('tasks.title as t_title',
+								 'tasks.description as t_description',
+								 'processes.advance as p_advance',
+								 'processes.deadline as p_deadline',
+								 'orders.id as o_id',
+								 'customers.business_name as c_business_name')				
+						->where('tasks.user_id',$data['row']->id)
+						->where('tasks.check',0)
+						->get();
+
+
+			return $this->view('worker_detail',$data);	
+
+		}
 
 
 	    //By the way, you can still create your own method in here... :) 
