@@ -32,3 +32,8 @@ Route::post('admin/resources/edit/edit-task','AdminResourcesController@editTask'
 Route::post('admin/resources/edit/finish-task','AdminResourcesController@finishTask')->name('finish-task');
 Route::post('admin/resources/edit/delete-task','AdminResourcesController@deleteTask')->name('delete-task');
 
+Route::post('admin/resources/edit/list-provider-details/{id}','AdminResourcesController@getProviderDetails')->name('list-provider-details');
+Route::post('admin/resources/edit/add-provider-detail','AdminResourcesController@addProviderDetail')->name('add-provider-detail');
+Route::post('admin/resources/edit/edit-provider-detail','AdminResourcesController@editProviderDetail')->name('edit-provider-detail');
+Route::post('admin/resources/edit/delete-provider-detail','AdminResourcesController@deleteProviderDetail')->name('delete-provider-detail');
+

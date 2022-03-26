@@ -36,8 +36,9 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 			$this->col[] = ["label"=>"Cantidad de prendas","name"=>"batch"];
 			$this->col[] = ["label"=>"Fecha de entrega","name"=>"deadline"];
 			$this->col[] = ["label"=>"% de Avance","name"=>"advance"];
-			$this->col[] = ["label"=>"Insumos","name"=>"id"];	
+			$this->col[] = ["label"=>"Insumos asignados","name"=>"id"];	
 			$this->col[] = ["label"=>"Tareas pendientes","name"=>"id"];	
+			$this->col[] = ["label"=>"Servicio asignado","name"=>"id"];	
 			$this->col[] = ["label"=>"Fecha de fin","name"=>"finish_date"];
 			$this->col[] = ["label"=>"Estado","name"=>"state"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
@@ -182,9 +183,11 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 					$('#iframe-modal-detalledelprocesosupply_id').attr('src', url_detalledelprocesosupply_id);
 				}
 				$('#modal-datamodal-detalledelprocesosupply_id').modal('show');
+				url_is_setted_detalledelprocesosupply_id = false;
 			}
 		
 			function hideModaldetalledelprocesosupply_id() {
+				
 				$('#modal-datamodal-detalledelprocesosupply_id').modal('hide');
 			}
 		
@@ -356,7 +359,7 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 						console.log(\"error\");
 					  });
 			}
-//------------------------------------------------------------------------------
+
 			$('#add-supply-detail').submit(function(e){
 				e.preventDefault();
 
@@ -409,7 +412,7 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 			}
 
 
-
+			//------------------------------------------------------------------------------
             var url_detalledelprocesouser_id ='http://sipam.test/admin/resources/modal-data?table=view_list_workers&columns=id,username,privilege&name_column=detalledelprocesouser_id&where=&select_to=username%2Cprivilege%3Aprivilege&columns_name_alias=Responsable%2CCargo';
 			var url_is_setted_detalledelprocesouser_id = false;
 		
@@ -419,6 +422,7 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 					$('#iframe-modal-detalledelprocesouser_id').attr('src', url_detalledelprocesouser_id);
 				}
 				$('#modal-datamodal-detalledelprocesouser_id').modal('show');
+				url_is_setted_detalledelprocesouser_id = false;
 			}
 		
 			function hideModaldetalledelprocesouser_id() {
@@ -774,11 +778,309 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 				});
 			}
 
+			//------------------------------------------------------------------------------
+
+			
+    
+				var url_detalledelprocesoprovider_id ='http://sipam.test/admin/resources/modal-data?table=view_list_providers&columns=id,business_name,ruc,description,processes&name_column=detalledelprocesoprovider_id&where=&select_to=business_name%2Cruc%2Cdescription%2Cprocesses&columns_name_alias=Proveedor%2CRUC%2CDescripción%2CProcesos%20Activos';
+				var url_is_setted_detalledelprocesoprovider_id = false;
+			
+				function showModaldetalledelprocesoprovider_id() {
+					if (url_is_setted_detalledelprocesoprovider_id == false) {
+						url_is_setted_detalledelprocesoprovider_id = true;
+						$('#iframe-modal-detalledelprocesoprovider_id').attr('src', url_detalledelprocesoprovider_id);
+					}
+					$('#modal-datamodal-detalledelprocesoprovider_id').modal('show');
+					url_is_setted_detalledelprocesoprovider_id = false;
+				}
+			
+				function hideModaldetalledelprocesoprovider_id() {
+					$('#modal-datamodal-detalledelprocesoprovider_id').modal('hide');
+				}
+			
+				function selectAdditionalDatadetalledelprocesoprovider_id(select_to_json) {
+					$.each(select_to_json, function (key, val) {
+						console.log('#' + key + ' = ' + val);
+						if (key == 'datamodal_id') {
+							$('#detalledelprocesoprovider_id .input-id').val(val);
+						}
+						if (key == 'datamodal_label') {
+							$('#detalledelprocesoprovider_id .input-label').val(val);
+						}
+						$('#detalledelproceso' + key).val(val).trigger('change');
+					})
+					url_is_setted_detalledelprocesoprovider_id = false;
+					hideModaldetalledelprocesoprovider_id();
+				}
+	
+				var currentRowp = null;
+	
+				function resetFormdetalledelprocesop() {
+					$('#panel-form-detalledelprocesop').find(\"input[type=text],input[type=number],select,textarea\").val('');
+					$('#panel-form-detalledelprocesop').find(\".select2\").val('').trigger('change');
+					$('#escogerdatop').prop('disabled', false);
+					if(currentRowp != null){
+						currentRowp.removeClass('warning');
+						currentRowp = null;
+						$('#btn-add-table-detalledelprocesop').val('Agregar a la Tabla');
+					}
+				}
+			
+				function deleteRowdetalledelprocesop(t) {
+			
+					swal({
+						title: \"¿Estás seguro de eliminar esta asignación?\",
+						text: \"Una vez eliminado, no se podrá recuperar\",
+						type: 'warning',
+						showCancelButton: true,
+						confirmButtonText: 'Si',
+						cancelButtonText: 'No',
+						reverseButtons: true
+					}, function (willDelete){
+						if (willDelete){
+							var p = $(t).parent().parent(); //parentTR
+							console.log(\"Contenido p: \" + p);
+							var id = p.find(\".provider_id .provider_detail_id\").val();
+							eliminardetalleproveedor(id);
+							console.log(\"Elemento eliminado\");
+							refreshdetalledelprocesop();
+						}else{
+							console.log(\"Eliminación cancelada\");
+						}
+					});
+					
+				}
+	
+				function eliminardetalleproveedor(id){
+					
+					var _token = $('input[name=_token]').val();
+									
+					console.log(\"id a eliminar: \" + id);
+					
+					$.ajax({
+						type	: 'POST',
+						url 	: 'delete-provider-detail',
+						data	: {
+							id : id,
+							_token : _token
+						},
+						success	: function(response){
+							if(response){
+								
+								refreshdetalledelprocesop();
+								
+							}
+						}
+					}).fail(function(){
+						console.log(\"error\");
+					});
+				}
+			
+				function editRowdetalledelprocesop(t) {
+	
+					if(currentRowp != null){
+						currentRowp.removeClass('warning');
+					}
+					var p = $(t).parent().parent(); //parentTR
+					currentRowp = p;
+					p.addClass('warning');
+					$('#btn-add-table-detalledelprocesop').val('Guardar Cambios');
+					$('#detalledelprocesoprovider_id .input-label').val(p.find(\".provider_id .td-label\").text());
+					$('#detalledelprocesoprovider_id .input-id').val(p.find(\".provider_id input\").val());
+					$('#detalledelprocesoprovider_id .input-id-2').val(p.find(\".provider_id .provider_detail_id\").val());
+					$('#detalledelprocesoservice').val(p.find(\".service input\").val());
+					$('#detalledelprocesopdescription').val(p.find(\".pdescription input\").val());
+					$('#detalledelprocesocost').val(p.find(\".cost input\").val());
+					$('#escogerdatop').prop('disabled', true);
+	
+				}
+			
+				function validateFormdetalledelprocesop() {
+					var is_false = 0;
+					$('#panel-form-detalledelprocesop .required').each(function () {
+						var v = $(this).val();
+						if (v == '') {
+							sweetAlert(\"¡Upss!\", \"Por favor, complete el formulario!\", \"warning\");
+							is_false += 1;
+						}
+					})
+			
+					if (is_false == 0) {
+						return true;
+					} else {
+						return false;
+					}
+				}
+	
+				function refreshdetalledelprocesop(){
+					$('#table-detalledelprocesop tbody').empty();
+					console.log(\"Llenando detalles de proveedores\");
+					var id = $('#process_id').val();
+					console.log(\"id: \" + id);
+					var trRow = '';
+					$.ajax(
+						{ 
+							type: 'POST', 
+							url: 'list-provider-details/' + id, 
+							data: '', 
+							success: function(result) { 
+								console.log(\"Cantidad de elementos: \" + result.length);
+							
+								if(result.length>0){
+									console.log(\"Dentro del if: \" + result.length);
+									for (var i = 0; i < result.length; i++) {
+										
+										trRow += '<tr>';
+										trRow += \"<td class='provider_id'><span class='td-label'>\" + result[i].business_name + \"</span>\" +
+												 \"<input type='hidden' name='detalledelproceso-provider_id[]' value='\" + result[i].provider_id + \"'/>\" +
+												 \"<input type='hidden' class='provider_detail_id' name='detalledelproceso-provider_detail_id[]' value='\" + result[i].id + \"'/>\" +
+												 \"</td>\";
+										trRow += \"<td class='service'>\" + result[i].service + 
+												 \"<input type='hidden' class='service' name='detalledelproceso-service[]' value='\" + result[i].service + \"'/>\" +
+												 \"</td>\";
+										trRow += \"<td class='pdescription'>\" + result[i].description +
+												 \"<input type='hidden' name='detalledelproceso-pdescription[]' value='\" + result[i].description + \"'/>\" +
+												 \"</td>\";
+										trRow += \"<td class='cost'>\" + result[i].cost +
+												 \"<input type='hidden' name='detalledelproceso-cost[]' value='\" + result[i].cost + \"'/>\" +
+												 \"</td>\";
+	
+										trRow += \"<td>\" +
+												 \"<a href='javascript:void(0)' onclick='editRowdetalledelprocesop(this)' class='btn btn-warning btn-xs' title='Editar proveedor'><i class='fa fa-pencil'></i></a> \";
+					
+										trRow += \"<a href='javascript:void(0)' onclick='deleteRowdetalledelprocesop(this)' class='btn btn-danger btn-xs' title='Eliminar proveedor'><i class='fa fa-trash'></i></a></td>\";
+										trRow += '</tr>';
+										
+									}
+																	
+									$('#table-detalledelprocesop tbody').prepend(trRow);
+									$('#btn-add-table-detalledelprocesop').val('Agregar a la Tabla');
+									$('#btn-reset-form-detalledelprocesop').click();
+		
+								}else{
+									console.log(\"Dentro del else: \" + result.length);
+									if ($('#table-detalledelprocesop tbody tr').length == 0) {
+										var colspan = $('#table-detalledelprocesop thead tr th').length;
+										$('#table-detalledelprocesop tbody').html(\"<tr class='trNullt'><td colspan='\" + colspan + \"' align='center'>No tenemos datos disponibles</td></tr>\");
+									}
+								}
+							}
+						}).fail(function() {
+							console.log(\"error\");
+						  });
+				}
+	
+				$('#add-provider-detail').submit(function(e){
+					e.preventDefault();
+	
+					if (validateFormdetalledelprocesop() == false) {
+						return false;
+					}
+	
+					if(currentRowp == null){
+						agregarproveedor();
+					}else{
+						editarproveedor();
+					}
+					
+	
+				});
+	
+		
+				function agregarproveedor(){
+					var provider_id = $('#detalledelprocesoprovider_id .input-id').val();
+					var process_id = $('#process_id').val();
+					var service = $('#detalledelprocesoservice').val();
+					var description = $('#detalledelprocesopdescription').val();
+					var cost = $('#detalledelprocesocost').val();
+					var _token = $('input[name=_token]').val();
+					
+					if (currentRowp != null) {
+						currentRowp.removeClass('warning');
+						currentRowp = null;
+					} 
+					
+					console.log(\"provider_id: \" + provider_id);
+					console.log(\"process_id: \" + process_id);
+					console.log(\"service: \" + service);
+					console.log(\"description: \" + description);
+					console.log(\"cost: \" + cost);
+	
+					$.ajax({
+						type	: 'POST',
+						url 	: 'add-provider-detail',
+						data	: {
+							provider_id : provider_id,
+							process_id : process_id,
+							service : service,
+							description : description,
+							cost : cost,
+							_token : _token
+						},
+						success	: function(response){
+							if(response){
+								
+								refreshdetalledelprocesop();
+								
+							}
+						}
+					}).fail(function(){
+						console.log(\"error\");
+					});
+				}
+	
+				function editarproveedor(){
+					var id = $('#detalledelprocesoprovider_id .input-id-2').val();
+					var provider_id = $('#detalledelprocesoprovider_id .input-id').val();
+					var process_id = $('#process_id').val();
+					var service = $('#detalledelprocesoservice').val();
+					var description = $('#detalledelprocesopdescription').val();
+					var cost = $('#detalledelprocesocost').val();
+					var _token = $('input[name=_token]').val();
+					
+					if (currentRowp != null) {
+						currentRowp.removeClass('warning');
+						currentRowp = null;
+					} 
+					
+					console.log(\"id: \" + id);
+					console.log(\"provider_id: \" + provider_id);
+					console.log(\"process_id: \" + process_id);
+					console.log(\"service: \" + service);
+					console.log(\"description: \" + description);
+					console.log(\"cost: \" + cost);
+	
+					$.ajax({
+						type	: 'POST',
+						url 	: 'edit-provider-detail',
+						data	: {
+							id : id,
+							service : service,
+							description : description,
+							cost : cost,
+							_token : _token
+						},
+						success	: function(response){
+							if(response){
+								
+								refreshdetalledelprocesop();
+								
+							}
+						}
+					}).fail(function(){
+						console.log(\"error\");
+					});
+				}
+	
+				
+	
+		
+
+
+
+			//------------------------------------------------------------------------------
+
 			$(function(){
-
-
-
-
 
 				$(document).ready(function() { 
 					indice_editar = $('#order_id').val();
@@ -848,6 +1150,13 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 					return esEntero(e);
 				});
 
+				$('#detalledelprocesoquantity').keypress(function(e){
+					return filterFloat(e,this);
+				});
+
+				$('#detalledelprocesocost').keypress(function(e){
+					return filterFloat(e,this);
+				});
 
 				function esEntero(key) {
 					var keycode = (key.which) ? key.which : key.keyCode;
@@ -856,6 +1165,42 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 					}else {
 						return true; 
 					}
+				}
+
+
+				function filterFloat(evt,input){
+					// Backspace = 8, Enter = 13, ‘0′ = 48, ‘9′ = 57, ‘.’ = 46, ‘-’ = 43
+					var key = window.Event ? evt.which : evt.keyCode;    
+					var chark = String.fromCharCode(key);
+					var tempValue = input.value+chark;
+					if(key >= 48 && key <= 57){
+						if(filter(tempValue)=== false){
+							return false;
+						}else{       
+							return true;
+						}
+					}else{
+						  if(key == 8 || key == 13 || key == 0) {     
+							  return true;              
+						  }else if(key == 46){
+								if(filter(tempValue)=== false){
+									return false;
+								}else{       
+									return true;
+								}
+						  }else{
+							  return false;
+						  }
+					}
+				}
+				function filter(__val__){
+					var preg = /^([0-9]+\.?[0-9]{0,2})$/; 
+					if(preg.test(__val__) === true){
+						return true;
+					}else{
+					   return false;
+					}
+					
 				}
 
 			});";
@@ -1035,7 +1380,7 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 							$column_value = 'Pedido N° '. str_pad($column_value,4,"0",STR_PAD_LEFT);
 						}			
 						// Actualizando el formato de las fechas
-						if($column_index == 1 || $column_index == 3 || $column_index == 7){
+						if($column_index == 1 || $column_index == 3 || $column_index == 8){
 							if ($column_value<>""){
 								$column_value = date("d/m/Y",strtotime($column_value));
 							}else{
@@ -1062,15 +1407,32 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 						//Formateando tareas pendientes						
 						if($column_index == 6){
 							$id = $column_value;
+						
 							$column_value = DB::table('tasks')
 							->where('tasks.process_id','=',$id)
 							->where('tasks.check','=',0)
 							->count();
 						}		
 						
-						
+						//Formateando proveedores asignados						
+						if($column_index == 7){
+							$id = $column_value;
+							
+							$proveedores = DB::table('provider_details')
+							->where('provider_details.process_id','=',$id)
+							->count();
+							
+							if($proveedores>0){
+								$column_value = "Si";
+							}else{
+								$column_value = "No";	
+							}
+						}
+
+								
 						// Formateando el estado
-						if($column_index == 8){
+						if($column_index == 9){
+							
 							if ($column_value==1){
 								$column_value="En proceso";
 							}
@@ -1193,6 +1555,9 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 				$data['tasks'] = DB::table('view_list_tasks')
 							->where('view_list_tasks.process_id','=',$id)->get();
 
+				$data['providers'] = DB::table('view_list_provider_details')
+							->where('view_list_provider_details.process_id','=',$id)->get();
+
 				return $this->view('resource_edit',$data);	
 			}
 		
@@ -1225,6 +1590,10 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 
 			$data['tasks'] = DB::table('view_list_tasks')
 						->where('view_list_tasks.process_id','=',$id)->get();
+
+			$data['providers'] = DB::table('view_list_provider_details')
+						->where('view_list_provider_details.process_id','=',$id)->get();
+
 
 			return $this->view('resource_detail',$data);	
 
@@ -1357,5 +1726,62 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 			return back();
 
 		}	
+
+
+		public function getProviderDetails($id){
+			
+			$data = DB::table('view_list_provider_details')
+				->where('view_list_provider_details.process_id','=',$id)->get();
+			return $data;
+
+		}
+
+		public function addProviderDetail(Request $request){
+			
+			if($request->description == null){
+				$request->description = '';
+			}
+
+			DB::table('provider_details')->insert([
+				'service' => $request->service,
+				'description' => $request->description,
+				'cost' => $request->cost,
+				'process_id' => $request->process_id,
+				'provider_id' => $request->provider_id
+				]);
+
+			return back();
+
+		}		
+
+		public function editProviderDetail(Request $request){
+
+			if($request->description == null){
+				$request->description = '';
+			}
+
+			DB::table('provider_details')
+				->where('provider_details.id', $request->id)
+				->update([
+					'service' => $request->service,
+					'description' => $request->description,
+					'cost' => $request->cost
+					]);
+
+			return back();
+		}	
+
+
+		public function deleteProviderDetail(Request $request){
+			
+			DB::table('provider_details')
+				->where('provider_details.id', '=', $request->id)->delete();
+
+			return back();
+
+		}	
+
+
+
 
 	}

@@ -39,6 +39,7 @@
 			$this->col[] = ["label"=>"Contacto","name"=>"contact_name"];
 			$this->col[] = ["label"=>"Teléfono de contacto","name"=>"contact_phone"];
 			$this->col[] = ["label"=>"E-mail de contacto","name"=>"contact_email"];
+			$this->col[] = ["label"=>"Procesos activos","name"=>"(select count(distinct provider_details.process_id) from provider_details inner join processes on provider_details.process_id=processes.id where provider_details.provider_id=providers.id and processes.state=1) as procesos"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
 
 			# START FORM DO NOT REMOVE THIS LINE

@@ -270,7 +270,7 @@
                             <div class='form-group bloque'>
                                 <label class="control-label col-sm-2">Cantidad<span class="text-danger" title="Este campo es requerido">*</span></label>
                                 <div class="col-sm-10">
-                                    <input id='detalledelprocesoquantity' type='text' name='child-quantity' class='form-control required'/>
+                                    <input id='detalledelprocesoquantity' type='text' name='child-quantity' class='form-control required' maxlength="10"/>
                                 </div>
                             </div>
                         </div>
@@ -381,14 +381,14 @@
                                 <div class='form-group bloque'>
                                     <label class="control-label col-sm-2">Tarea<span class="text-danger" title="Este campo es requerido">*</span></label>
                                     <div class="col-sm-10">
-                                        <input id='detalledelprocesotitle' type='text' name='child-title' class='form-control required'/>
+                                        <input id='detalledelprocesotitle' type='text' name='child-title' class='form-control required' maxlength="100"/>
                                     </div>
                                 </div>
                                 &nbsp;
                                 <div class='form-group bloque'>
                                     <label class="control-label col-sm-2">Descripción</label>
                                     <div class="col-sm-10">
-                                        <input id='detalledelprocesodescription' type='text' name='child-description' class='form-control'/>
+                                        <input id='detalledelprocesodescription' type='text' name='child-description' class='form-control' maxlength="500"/>
                                     </div>
                                 </div>
                                 <input type="hidden" id="detalledelprocesocheck" value="false">
@@ -453,6 +453,135 @@
                                                     <a href='javascript:void(0)' onclick='finishedRowdetalledelprocesot(this)' class='btn btn-success btn-xs' title='Terminar tarea'><i class='fa fa-check'></i></a>
                                                 @endif                                            
                                             <a href='javascript:void(0)' onclick='deleteRowdetalledelprocesot(this)' class='btn btn-danger btn-xs' title='Eliminar tarea'><i class='fa fa-trash'></i></a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr class="trNullt">
+                                    <td colspan="6" align="center">No tenemos datos disponibles</td>
+                                </tr>                                    
+                    
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>    
+
+   
+    <div id='panel-form-detalledelprocesop' class="panel panel-default">
+        <div class="panel-heading">
+            <strong>V. Proveedores de servicio</strong>
+        </div>
+        <div class="panel-body">
+            <div class='row'>
+                <div class='col-sm-10'>
+                    <form id="add-provider-detail" class="panel panel-default">
+                        @csrf
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <i class="fa fa-pencil-square-o"></i> Formulario
+                            </div>
+                            <div class="panel-body child-form-area">
+                                <div class='form-group bloque'>
+                                    <label class="control-label col-sm-2">Proveedor<span class="text-danger" title="Este campo es requerido">*</span></label>
+                                    <div class="col-sm-10">
+                                        <div id='detalledelprocesoprovider_id' class="input-group">
+                                            <input type="hidden" class="input-id">
+                                            <input type="hidden" class="input-id-2">
+                                            <input type="text" class="form-control input-label required" readonly>
+                                            <span class="input-group-btn">
+                                                <button id="escogerdatop" class="btn btn-primary" onclick="showModaldetalledelprocesoprovider_id()" type="button"><i class='fa fa-search'></i> Escoger Dato</button>
+                                            </span>
+                                        </div>
+                                        <!-- /input-group -->
+                                        <div id='modal-datamodal-detalledelprocesoprovider_id' class="modal" tabindex="-1" role="dialog">
+                                            <div class="modal-dialog  " role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                        <h4 class="modal-title"><i class='fa fa-search'></i> Escoger proveedor de servicio a asignar </h4>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <iframe id='iframe-modal-detalledelprocesoprovider_id' style="border:0;height: 430px;width: 100%" src=""></iframe>
+                                                    </div>
+                                                </div><!-- /.modal-content -->
+                                            </div><!-- /.modal-dialog -->
+                                        </div><!-- /.modal -->
+                                    </div>
+                                </div>
+                                &nbsp;
+                                <div class='form-group bloque'>
+                                    <label class="control-label col-sm-2">Servicio<span class="text-danger" title="Este campo es requerido">*</span></label>
+                                    <div class="col-sm-10">
+                                        <input id='detalledelprocesoservice' type='text' name='child-service' class='form-control required' maxlength="50"/>
+                                    </div>
+                                </div>
+                                &nbsp;
+                                <div class='form-group bloque'>
+                                    <label class="control-label col-sm-2">Descripción</label>
+                                    <div class="col-sm-10">
+                                        <input id='detalledelprocesopdescription' type='text' name='child-description' class='form-control' maxlength="100"/>
+                                    </div>
+                                </div>
+                                &nbsp;
+                                <div class='form-group bloque'>
+                                    <label class="control-label col-sm-2">Costo del servicio</label>
+                                    <div class="col-sm-10">
+                                        <input id='detalledelprocesocost' type='text' name='child-cost' class='form-control'/>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="panel-footer" align="right">
+                                <input type='button' class='btn btn-default' id="btn-reset-form-detalledelprocesop" onclick="resetFormdetalledelprocesop()" value='Resetear'/>
+                                <!--<input type='button' id='btn-add-table-detalledelprocesop' class='btn btn-primary' onclick="addToTabledetalledelprocesop()" value='Agregar a la Tabla'/>-->
+                                <input type='submit' id='btn-add-table-detalledelprocesop' class='btn btn-primary' value='Agregar a la Tabla'/>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+    
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class='fa fa-table'></i> Proveedores de servicio asignados
+                </div>
+                <div class="panel-body no-padding table-responsive" style="max-height: 400px;overflow: auto;">
+                    <table id='table-detalledelprocesop' class='table table-striped table-bordered'>
+                        <thead>
+                            <tr>
+                                <th>Proveedor</th>
+                                <th>Servicio</th>
+                                <th>Descripción</th>
+                                <th>Costo</th>
+                                <th width="100px">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (count($providers)>0)
+                                @foreach ($providers as $p)
+                                    <tr>
+                                        <td class='provider_id'> 
+                                            <span class='td-label'>{{$p->business_name}}</span>
+                                            <input type='hidden' name='detalledelproceso-provider_id[]' value=' {{$p->provider_id}}'/>
+                                            <input type='hidden' class="provider_detail_id" name='detalledelproceso-provider_detail_id[]' value='{{$p->id}}'/>
+                                        </td>
+                                        <td class='service'> {{$p->service}} 
+                                            <input type='hidden' name='detalledelproceso-service[]' value='{{$p->service}}'/>
+                                        </td>
+                                        <td class='pdescription'> {{$p->description}} 
+                                            <input type='hidden' name='detalledelproceso-pdescription[]' value='{{$p->description}}'/>
+                                        </td>
+                                        <td class='cost'> {{$p->cost}} 
+                                            <input type='hidden' name='detalledelproceso-cost[]' value='{{$p->cost}}'/>
+                                        </td>
+                                        <td>
+                                            <a href='javascript:void(0)' onclick='editRowdetalledelprocesop(this)' class='btn btn-warning btn-xs' title='Editar proveedor'><i class='fa fa-pencil'></i></a>
+                                            <a href='javascript:void(0)' onclick='deleteRowdetalledelprocesop(this)' class='btn btn-danger btn-xs' title='Eliminar proveedor'><i class='fa fa-trash'></i></a>
                                         </td>
                                     </tr>
                                 @endforeach

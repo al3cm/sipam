@@ -330,6 +330,60 @@
         </div>
     </div>    
 
+    <div id='panel-form-detalledelprocesop' class="panel panel-default">
+        <div class="panel-heading">
+            <strong>V. Proveedores de servicio</strong>
+        </div>
+        <div class="panel-body">
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class='fa fa-table'></i> Proveedores de servicio asignados
+                </div>
+                <div class="panel-body no-padding table-responsive" style="max-height: 400px;overflow: auto;">
+                    <table id='table-detalledelprocesop' class='table table-striped table-bordered'>
+                        <thead>
+                            <tr>
+                                <th>Proveedor</th>
+                                <th>Servicio</th>
+                                <th>Descripción</th>
+                                <th>Costo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (count($providers)>0)
+                                @foreach ($providers as $p)
+                                <tr>
+                                        <td class='business_name'> {{$p->business_name}}
+                                            <input type='hidden' name='detalledelproceso-business_name[]' value='{{$p->business_name}}'/>
+                                        </td>
+                                        <td class='provider_id'>
+                                            <span class='td-label'> {{$p->service}} </span>
+                                            <input type='hidden' name='detalledelproceso-provider_id[]' value=' {{$p->provider_id}}'/>
+                                            <input type='hidden' class="service" name='detalledelproceso-service[]' value='{{$p->service}}'/>
+                                        </td>
+                                        <td class='description'> {{$p->description}} 
+                                            <input type='hidden' name='detalledelproceso-description[]' value='{{$p->description}}'/>
+                                        </td>
+                                        <td class='cost'> {{$p->cost}} 
+                                            <input type='hidden' name='detalledelproceso-cost[]' value='{{$p->cost}}'/>
+                                        </td>
+                                                                                              
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr class="trNullt">
+                                    <td colspan="6" align="center">No tenemos datos disponibles</td>
+                                </tr>                                    
+                    
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>        
+
     <div class="panel panel-default">
         <div class="panel-footer">
             
