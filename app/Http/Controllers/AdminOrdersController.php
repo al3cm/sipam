@@ -329,7 +329,7 @@
 					}
 
 					function filterFloat(evt,input){
-						// Backspace = 8, Enter = 13, ‘0′ = 48, ‘9′ = 57, ‘.’ = 46, ‘-’ = 43
+						// Backspace = 8, Enter = 13, '0' = 48, '9' = 57, '.' = 46, '-' = 43
 						var key = window.Event ? evt.which : evt.keyCode;    
 						var chark = String.fromCharCode(key);
 						var tempValue = input.value+chark;

@@ -297,6 +297,24 @@ class AdminResourcesController extends \crocodicstudio\crudbooster\controllers\C
 						is_false += 1;
 					}
 				})
+				
+				var stock = parseFloat($('#detalledelprocesostock').val());
+				var quantity = parseFloat($('#detalledelprocesoquantity').val());
+				if (currentRow == null) {
+					console.log(\"nuevo-> stock: \" + stock+ \" cantidad: \"+quantity);
+					if (quantity>stock){
+						sweetAlert(\"¡Upss!\",\"La cantidad ingresada no puede ser mayor al stock disponible\");
+						is_false += 1;
+					}
+				} else {
+					var oquantity = parseFloat(currentRow.find('[name=\"detalledelproceso-quantity[]\"]').val());
+					console.log(\"actualiza-> stock: \" + stock+ \" cantidad: \"+quantity);
+					console.log(\"currentRow \"+currentRow.find('[name=\"detalledelproceso-quantity[]\"]').val());
+					if (quantity>(stock+oquantity)){
+						sweetAlert(\"¡Upss!\",\"La cantidad ingresada no puede ser mayor al stock disponible\");
+						is_false += 1;
+					}
+				}
 		
 				if (is_false == 0) {
 					return true;

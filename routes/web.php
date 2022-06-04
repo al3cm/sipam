@@ -37,3 +37,7 @@ Route::post('admin/resources/edit/add-provider-detail','AdminResourcesController
 Route::post('admin/resources/edit/edit-provider-detail','AdminResourcesController@editProviderDetail')->name('edit-provider-detail');
 Route::post('admin/resources/edit/delete-provider-detail','AdminResourcesController@deleteProviderDetail')->name('delete-provider-detail');
 
+Route::post('admin/purchases/edit/get-stock/{id}','AdminPurchasesController@getStock')->name('get-stock');
+Route::post('admin/purchases/edit/delete-purchase-detail','AdminPurchasesController@deletePurchaseDetail')->name('delete-purchase-detail');
+Route::post('admin/purchases/edit/list-purchase-details/{id}','AdminPurchasesController@getPurchaseDetails')->name('list-purchase-details');
+Route::post('admin/purchases/edit/add-purchase-detail','AdminPurchasesController@addPurchaseDetail')->name('add-purchase-detail');
