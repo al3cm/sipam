@@ -579,6 +579,43 @@
 				});
 			}
 
+			function guardarCompra(){
+				
+				var id = $('#purchase_id').val();
+				var doc_type = $('#doc_type').val();
+				var document = $('#document').val();
+				
+				var purchase_date = $('#purchase_date').val();
+				var provider_id = $('#provider_id').val();
+				var _token = $('input[name=_token]').val();
+				
+				console.log(\"---Editando compra---\");
+				console.log(\"id: \" + id);
+				console.log(\"doc_type: \" + doc_type);
+				console.log(\"document: \" + document);
+				console.log(\"purchase_date: \" + purchase_date);
+				console.log(\"provider_id: \" + provider_id);
+				
+				$.ajax({
+					type	: 'POST',
+					url 	: 'edit-purchase',
+					data	: {
+						id : id,
+						doc_type : doc_type,
+						document : document,
+						purchase_date : purchase_date,
+						provider_id : provider_id,
+						_token : _token
+					},
+					success	: function(response){
+						if(response){
+							sweetAlert(\"Listo\", \"Se actualizaron los datos\", \"success\");
+						}
+					}
+				}).fail(function(){
+					console.log(\"error\");
+				});
+			}
 
 			function refreshdetalledelacompra(){
 				$('#table-detalledelacompra tbody').empty();
@@ -797,6 +834,33 @@
 	    public function hook_before_delete($id) {
 	        //Your code here
 
+			// se consultarán los detalles de la compra
+			$cantidades="";
+			$error = 0;
+			$mensaje="<p>No se puede eliminar la compra debido a: <p>";
+			$data = DB::table('purchase_details')
+			->where('purchase_details.purchase_id','=',$id)->get();
+			foreach($data as $d){
+				//$cantidades = $cantidades . $d->quantity . ' ';
+				$supply = DB::table('supplies')
+				->where('supplies.id','=',$d->supply_id)->get();
+				if($d->quantity > $supply[0]->stock){
+					$mensaje = $mensaje . "La cantidad del detalle de la compra de <b>". $supply[0]->description . "</b> a eliminar (". $d->quantity . ") no puede ser mayor al stock disponible (" . $supply[0]->stock . ")";
+					$error++;
+				}
+			}
+			
+			// detendiendo la operación
+			if($error>0){
+				CRUDBooster::redirectBack(
+					$mensaje
+				);
+			}else{
+				/*CRUDBooster::redirectBack(
+					'OK'
+				);*/
+			}
+
 	    }
 
 	    /* 
@@ -809,6 +873,11 @@
 	    public function hook_after_delete($id) {
 	        //Your code here
 
+			DB::table('purchase_details')->where('purchase_id', $id)->delete();
+
+			DB::table('purchases')
+			->where('id', $id)
+			->update(['state' => 0]);
 	    }
 
 
@@ -847,6 +916,20 @@
 				->where('view_list_purchase_details.purchase_id','=',$id)->get();
 			return $data;
 
+		}
+
+		public function editPurchase(Request $request){
+
+			DB::table('purchases')
+              ->where('id', $request->id)
+              ->update([
+						'doc_type' => $request->doc_type,
+						'document' => $request->document,
+						'purchase_date' => date("Y-m-d",strtotime($request->purchase_date)),
+						'provider_id' => $request->provider_id
+					]);
+
+			return back();
 		}
 
 		public function addPurchaseDetail(Request $request){
@@ -892,7 +975,6 @@
 					'total' => DB::table('purchase_details')
 									->where(
 										[
-											'supply_id' => $request->supply_id,
 											'purchase_id' => $request->purchase_id
 										]
 										)->sum('subtotal')

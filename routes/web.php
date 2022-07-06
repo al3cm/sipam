@@ -41,3 +41,4 @@ Route::post('admin/purchases/edit/get-stock/{id}','AdminPurchasesController@getS
 Route::post('admin/purchases/edit/delete-purchase-detail','AdminPurchasesController@deletePurchaseDetail')->name('delete-purchase-detail');
 Route::post('admin/purchases/edit/list-purchase-details/{id}','AdminPurchasesController@getPurchaseDetails')->name('list-purchase-details');
 Route::post('admin/purchases/edit/add-purchase-detail','AdminPurchasesController@addPurchaseDetail')->name('add-purchase-detail');
+Route::post('admin/purchases/edit/edit-purchase','AdminPurchasesController@editPurchase')->name('edit-purchase');

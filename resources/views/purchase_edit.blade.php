@@ -33,7 +33,7 @@
                             <label class="control-label">N° de documento</label>
                         </div>
                         <div class="col-sm-6">
-                            <input type="text" readonly name="document" class="form-control" id="document" value="{{$row->document}}"> 
+                            <input type="text" name="document" class="form-control" id="document" value="{{$row->document}}"> 
                         </div>
                     </div>
                 </div>
@@ -47,13 +47,14 @@
                         </div>
                         <div class="col-sm-6">
                             <div class="input-group">
+                                
                                 <span class="input-group-addon open-datetimepicker">
                                     <a>
                                         <i class="fa fa-calendar">
                                         </i>
                                     </a>
                                 </span>
-                                <input type="text" readonly required name="purchase_date" id="purchase_date" class="form-control" value="{{date('d-m-Y', strtotime($row->purchase_date))}}"> 
+                                <input type="text" readonly required name="purchase_date" id="purchase_date" class="form-control notfocus input_date" value="{{date('d-m-Y', strtotime($row->purchase_date))}}"> 
                             </div>
                         </div>
                     </div>
@@ -67,7 +68,7 @@
                             <label>Proveedor</label>
                         </div>
                         <div class="col-sm-6">
-                            <select class="form-control" name="purchase_id" id="purchase_id" value="{{$row->provider_id}}" required>
+                            <select class="form-control" name="provider_id" id="provider_id" value="{{$row->provider_id}}" required>
                                 <option value="">** Selecciona un proveedor **</option>
                                 @foreach ($providers as $p)
                                     <option value="{{$p->id}}" @if ($p->id==$row->provider_id) selected @endif>{{$p->business_name}}</option>    
@@ -77,6 +78,9 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="panel-footer">
+            <a href='javascript:void(0)' onclick='guardarCompra(this)' class='btn btn-primary' title='Guardar cambios'>Guardar cambios</a>
         </div>
     </div>
     <div id='panel-form-detalledelacompra' class="panel panel-default">
